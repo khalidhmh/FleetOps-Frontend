@@ -1,0 +1,18 @@
+.preview-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    gap: 18px;
+}
+
+.preview-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.field-width {
+    max-width: 460px;
+}

@@ -1,0 +1,138 @@
+<section class="view-page preview-page">
+    <section class="card stack">
+        <div class="preview-title">
+            <h1 class="heading-lg">Core UI Components</h1>
+            <span class="chip success">Main System</span>
+        </div>
+        <p>
+            Minimal reusable building blocks based on your attached design
+            direction.
+        </p>
+    </section>
+
+    <section class="grid tokens">
+        <article class="color-swatch">
+            <div class="top palette-primary">
+                <span>Primary</span>
+                <span>#00b984</span>
+            </div>
+            <div class="tones"></div>
+        </article>
+        <article class="color-swatch">
+            <div class="top palette-secondary">
+                <span>Secondary</span>
+                <span>#565e6d</span>
+            </div>
+            <div class="tones"></div>
+        </article>
+        <article class="color-swatch">
+            <div class="top palette-tertiary">
+                <span>Tertiary</span>
+                <span>#d3e3ff</span>
+            </div>
+            <div class="tones"></div>
+        </article>
+    </section>
+
+    <section class="grid main">
+        <article class="card stack">
+            <h2 class="heading-md">Typography</h2>
+            <h1 class="heading-xl">Heading XL</h1>
+            <h2 class="heading-lg">Heading LG</h2>
+            <h3 class="heading-md">Heading MD</h3>
+            <label class="label">Main Label</label>
+            <p>Body text for description and content details.</p>
+            <p class="helper-text">Helper text / hint / extra details.</p>
+        </article>
+
+        <article class="card stack">
+            <h2 class="heading-md">Buttons</h2>
+            <div class="button-group">
+                <button class="button primary" type="button">Primary</button>
+                <button class="button secondary" type="button">
+                    Secondary
+                </button>
+                <button class="button inverted" type="button">Inverted</button>
+                <button class="button outlined" type="button">Outlined</button>
+            </div>
+            <div class="row">
+                <button
+                    class="icon-button primary"
+                    type="button"
+                    aria-label="Edit">
+                    ✎
+                </button>
+                <button
+                    class="icon-button secondary"
+                    type="button"
+                    aria-label="Save">
+                    ▲
+                </button>
+                <button
+                    class="icon-button danger"
+                    type="button"
+                    aria-label="Delete">
+                    🗑
+                </button>
+            </div>
+        </article>
+
+        <article class="card stack">
+            <h2 class="heading-md">Inputs</h2>
+            <div class="field-width">
+                <label class="label" for="search">Search</label>
+                <div class="search-field">
+                    <span class="search-icon">⌕</span>
+                    <input id="search" type="text" placeholder="Search" />
+                </div>
+            </div>
+            <div class="field-width">
+                <label class="label" for="name">Text Box</label>
+                <input id="name" type="text" placeholder="Enter your name" />
+            </div>
+            <div class="field-width">
+                <label class="label" for="note">Textarea</label>
+                <textarea id="note" placeholder="Add a note..."></textarea>
+            </div>
+        </article>
+
+        <article class="card stack">
+            <h2 class="heading-md">Toggle / Switch</h2>
+            <div class="row">
+                <label class="switch" aria-label="Notifications">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+                <span>Notifications On</span>
+            </div>
+            <div class="row">
+                <label class="switch" aria-label="Live updates">
+                    <input type="checkbox" />
+                    <span class="slider"></span>
+                </label>
+                <span>Live Updates Off</span>
+            </div>
+            <div class="row">
+                <span class="chip success">Active</span>
+                <span class="chip neutral">Pending</span>
+            </div>
+        </article>
+
+        <article class="card stack">
+            <h2 class="heading-md">Grid Layout Example</h2>
+            <div class="grid compact">
+                <div class="card">Block 1</div>
+                <div class="card">Block 2</div>
+                <div class="card">Block 3</div>
+                <div class="card">Block 4</div>
+            </div>
+        </article>
+    </section>
+
+    <section class="card stack">
+        <button id="home-action" class="button primary" type="button">
+            Run Api Test
+        </button>
+        <p id="home-message" class="helper-text"></p>
+    </section>
+</section>

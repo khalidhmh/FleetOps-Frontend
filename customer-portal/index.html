@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Customer Portal</title>
+        <link rel="icon" href="data:," />
+        <link rel="stylesheet" href="./src/styles/main.css" />
+    </head>
+    <body>
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="navbar__brand">Customer Portal</div>
+            <div class="navbar__links">
+                <a class="navbar__link" href="/" data-link data-route="/"
+                    >Main Page</a
+                >
+                <a
+                    class="navbar__link"
+                    href="/page-one"
+                    data-link
+                    data-route="/page-one"
+                    >Page One</a
+                >
+                <a
+                    class="navbar__link"
+                    href="/preview-page"
+                    data-link
+                    data-route="/preview-page"
+                    >Template Page</a
+                >
+            </div>
+        </nav>
+
+        <main id="app-content" class="app-content" aria-live="polite"></main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Fleet Tracking Platform. All rights reserved.</p>
+        </footer>
+
+        <script type="module" src="./src/main.js"></script>
+    </body>
+</html>
