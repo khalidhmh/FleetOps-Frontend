@@ -1,0 +1,6 @@
+﻿.vehicles-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    gap: 16px;
+}
