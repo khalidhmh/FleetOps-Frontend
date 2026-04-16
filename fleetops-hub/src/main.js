@@ -17,7 +17,7 @@ function initDashboardShell() {
     const shell = document.querySelector("[data-shell]");
     const collapseBtn = document.getElementById("sidebar-collapse-btn");
     const mobileBtn = document.getElementById("sidebar-mobile-btn");
-    const collapseStateKey = "fleetops-hub:sidebar-collapsed";
+    const collapseStateKey = "fleetops-operations:sidebar-collapsed";
 
     if (!shell) {
         return;

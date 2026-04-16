@@ -9,7 +9,7 @@
         "dev:all:silent": "node Server/scripts/dev-orchestrator.mjs",
         "dev:driver": "node Server/scripts/serve-app.mjs --root driver-app --title \"Driver App\" --preferred-port 3001 --open",
         "dev:customer": "node Server/scripts/serve-app.mjs --root customer-portal --title \"Customer Portal\" --preferred-port 3002 --open",
-        "dev:dashboard": "node Server/scripts/serve-app.mjs --root fleetops-hub --title \"FleetOps Hub\" --preferred-port 3003 --open",
+        "dev:dashboard": "node Server/scripts/serve-app.mjs --root fleetops-operations --title \"FleetOps Operations\" --preferred-port 3003 --open",
         "dev:maintenance": "node Server/scripts/serve-app.mjs --root maintenance-app --title \"Maintenance App\" --preferred-port 3004 --open"
     }
 }

@@ -4,7 +4,7 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $serverScript = Join-Path $root '..\Server\scripts\serve-app.mjs'
 
 try {
-  node $serverScript --root 'fleetops-hub' --title 'FleetOps Hub' --preferred-port 3003 --open
+  node $serverScript --root 'fleetops-operations' --title 'FleetOps Operations' --preferred-port 3003 --open
 } catch {
   Write-Host "Dashboard launcher failed: $($_.Exception.Message)" -ForegroundColor Red
 } finally {

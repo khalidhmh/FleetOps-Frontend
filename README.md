@@ -6,7 +6,7 @@ This workspace is a multi-app vanilla frontend setup managed by a single Node or
 
 - Driver App
 - Customer Portal
-- FleetOps Hub
+- FleetOps Operations
 - Maintenance App
 
 Each app has its own folder and can run independently.

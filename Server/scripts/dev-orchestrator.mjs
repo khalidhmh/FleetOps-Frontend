@@ -26,8 +26,8 @@ const appConfigs = [
     },
     {
         name: "dashboard",
-        title: "FleetOps Hub",
-        root: "fleetops-hub",
+        title: "FleetOps Operations",
+        root: "fleetops-operations",
         preferredPort: 3003,
     },
     {
