@@ -211,7 +211,7 @@ h6 {
 }
 
 .sidebar-brand__subtitle {
-    color: #64748b;
+    color: var(--color-primary);
     font-size: 13px;
     font-weight: 700;
 }
