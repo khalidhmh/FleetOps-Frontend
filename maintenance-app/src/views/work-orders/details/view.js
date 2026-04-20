@@ -6,7 +6,8 @@ function queryParams() {
 }
 
 function getVehicleByPlate(plate) {
-    return WorkOrdersApi.getVehicles().find(v => v.plate === plate) || null;
+    const vehicles = WorkOrdersApi.getVehicles();
+    return vehicles.find(v => v.plate === plate) || null;
 }
 
 // Map status to progress index
@@ -52,14 +53,18 @@ function renderPage(order) {
         if(vehicle.status === "out_of_service") vStatusClass = "wo-pill--emergency";
         if(vehicle.status === "available") vStatusClass = "wo-pill--routine";
         
-        document.getElementById("wod-veh-status").innerHTML = `<span class="wo-pill ${vStatusClass}">${vehicle.status.replace("_", " ")}</span>`;
+        const displayStatus = vehicle.status.split("_")
+                                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                            .join(" ");
+        
+        document.getElementById("wod-veh-status").innerHTML = `<span class="wo-pill ${vStatusClass}">${displayStatus}</span>`;
     }
 
     // Work Desc
     document.getElementById("wod-description").textContent = order.description || "No description provided.";
-
-    // Costs (Mock logic tying it to the static table for now)
-    document.getElementById("wod-total-cost").textContent = order.cost !== "—" ? order.cost : "EGP 1,450";
+    
+    // Costs
+    renderCostSummary(order);
 
     // Attachments
     renderAttachments(order.files || []);
@@ -69,6 +74,16 @@ function renderPage(order) {
 
     // Assignment Box
     renderAssignmentBox(order);
+
+    // Logs & Parts
+    renderRepairLog(order);
+    renderPartsUsed(order);
+
+    // Close Button Visibility
+    const closeBtn = document.getElementById("wod-close-btn");
+    if (closeBtn) {
+        closeBtn.style.display = order.status === "Resolved" ? "block" : "none";
+    }
 }
 
 function renderAttachments(files) {
@@ -198,6 +213,84 @@ function renderTimeline(order) {
     }
 }
 
+function renderRepairLog(order) {
+    const container = document.getElementById("wod-repair-log-container");
+    const title = document.getElementById("wod-repair-log-title");
+    if (!container || !title) return;
+
+    const logs = order.logs || [];
+    title.textContent = `Repair Log (${logs.length})`;
+
+    if (logs.length === 0) {
+        container.innerHTML = `<p style="color:var(--color-text-muted); font-size:14px; padding: 20px 0;">No repair logs recorded for this order yet.</p>`;
+        return;
+    }
+
+    container.innerHTML = logs.map((log, idx) => `
+        <div class="wod-log-item">
+            <div class="wod-log-indicator ${idx === logs.length - 1 ? 'wod-log-indicator--orange' : ''}">${idx + 1}</div>
+            <div class="wod-log-content">
+                <div class="wod-log-header">
+                    <h3>${log.title}</h3>
+                    <span>${log.duration}</span>
+                </div>
+                <p>${log.description}</p>
+                <small class="wod-log-meta">${log.mechanic} · ${log.date}</small>
+            </div>
+        </div>
+    `).join("");
+}
+
+function renderPartsUsed(order) {
+    const tbody = document.getElementById("wod-parts-tbody");
+    const title = document.getElementById("wod-parts-title");
+    const footer = document.getElementById("wod-parts-footer");
+    if (!tbody || !title || !footer) return;
+
+    const parts = order.parts || [];
+    title.textContent = `Parts Used (${parts.length})`;
+
+    if (parts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 30px; color:var(--color-text-muted);">No parts recorded.</td></tr>`;
+        footer.textContent = `Total Parts: EGP 0`;
+        return;
+    }
+
+    tbody.innerHTML = parts.map(p => `
+        <tr>
+            <td>${p.name}</td>
+            <td>${p.qty}</td>
+            <td>EGP ${p.price.toLocaleString()}</td>
+            <td class="wod-align-right wod-font-bold">EGP ${(p.price * p.qty).toLocaleString()}</td>
+        </tr>
+    `).join("");
+
+    footer.textContent = `Total Parts: EGP ${(order.partsCost || 0).toLocaleString()}`;
+}
+
+function renderCostSummary(order) {
+    const partsEl = document.getElementById("wod-summary-parts");
+    const laborEl = document.getElementById("wod-summary-labor");
+    const totalEl = document.getElementById("wod-total-cost");
+    const ratioEl = document.getElementById("wod-summary-ratio");
+    
+    if (!partsEl || !laborEl || !totalEl || !ratioEl) return;
+
+    const partsCost = order.partsCost || 0;
+    const laborCost = order.laborCost || 0;
+    const totalCost = partsCost + laborCost;
+    const marketValue = 850000; // Mock value for consistency
+    const ratio = (totalCost / marketValue) * 100;
+
+    partsEl.textContent = `EGP ${partsCost.toLocaleString()}`;
+    laborEl.textContent = `EGP ${laborCost.toLocaleString()}`;
+    totalEl.textContent = `EGP ${totalCost.toLocaleString()}`;
+    ratioEl.textContent = `${ratio.toFixed(1)}%`;
+    
+    // Alert logic if ratio is high
+    ratioEl.style.color = ratio > 5 ? "var(--color-danger)" : "#10b981";
+}
+
 function renderAssignmentBox(order) {
     const displayBox = document.getElementById("wod-assignment-display");
     const mechanic = order.mechanic;
@@ -271,7 +364,7 @@ function initAssignmentEdit() {
             currentOrder = WorkOrdersApi.getOrderById(currentOrder.id);
             renderPage(currentOrder);
         } else {
-            alert("Could not reassign mock data. Try modifying a newly created order!");
+            alert("Could not reassign work order. Please try again.");
         }
 
         displayBox.style.display = "block";
@@ -279,6 +372,27 @@ function initAssignmentEdit() {
     };
     saveBtn.addEventListener("click", onSave);
     cleanupFns.push(() => saveBtn.removeEventListener("click", onSave));
+}
+
+function initCloseOrder() {
+    const closeBtn = document.getElementById("wod-close-btn");
+    if (!closeBtn) return;
+
+    const onClose = () => {
+        if (!currentOrder) return;
+        
+        const success = WorkOrdersApi.updateOrderStatus(currentOrder.id, "Closed");
+        if (success) {
+            // Re-fetch to get updated state
+            currentOrder = WorkOrdersApi.getOrderById(currentOrder.id);
+            renderPage(currentOrder);
+        } else {
+            alert("Could not close work order. Please try again.");
+        }
+    };
+
+    closeBtn.addEventListener("click", onClose);
+    cleanupFns.push(() => closeBtn.removeEventListener("click", onClose));
 }
 
 // ─── Lifecycle ───────────────────────────────────────────────────────────────
@@ -303,6 +417,7 @@ export function mount(container) {
 
     renderPage(currentOrder);
     initAssignmentEdit();
+    initCloseOrder();
 }
 
 export function unmount() {

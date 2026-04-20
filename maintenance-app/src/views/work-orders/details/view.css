@@ -23,11 +23,17 @@
 }
 .wod-back-link:hover { color: var(--color-text-title); }
 
+.wod-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
 .wod-title-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 8px;
 }
 
 .wod-title {
@@ -42,6 +48,42 @@
     display: flex;
     gap: 8px;
 }
+
+/* ── Generic Pill Styles ────────────────── */
+.wo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 12px;
+    height: 24px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Status variants */
+.wo-pill--open { background: #f1f5f9; color: #475569; }
+.wo-pill--assigned { background: #ecfdf5; color: #059669; }
+.wo-pill--inprogress { background: #fef3c7; color: #b45309; }
+.wo-pill--resolved { background: #ecfdf5; color: #059669; }
+.wo-pill--closed { background-color: var(--color-secondary); color: #ffffff; }
+
+/* Type variants */
+.wo-pill--routine { background: #f0f9ff; color: #0369a1; }
+.wo-pill--breakdown { background: #ffedd5; color: #9a3412; }
+.wo-pill--emergency { background: #fee2e2; color: #b91c1c; }
+
+/* Priority */
+.wo-pill--urgent { background: #fee2e2; color: #b91c1c; }
+.wo-pill--urgent::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+}
+.wo-pill--normal { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; }
 
 .wod-subtitle {
     font-size: var(--font-size-sm);
@@ -62,9 +104,9 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow-sm);
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 }
 
 .wod-card-header {
@@ -108,7 +150,8 @@
 .wod-grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    grid-template-rows: auto auto;
+    gap: 32px 20px;
 }
 
 .wod-data-group label {
@@ -117,14 +160,14 @@
     font-weight: 700;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
 }
 .wod-data-group p {
     margin: 0;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-title);
-    font-weight: 500;
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: 600;
 }
 
 /* ── Description ────────────────────────── */

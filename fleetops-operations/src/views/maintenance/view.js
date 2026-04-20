@@ -1,6 +1,9 @@
 import MaintenanceApi from "../../services/api/maintenance.js";
 
+let cleanupFns = [];
+
 export function mount() {
+    cleanupFns = [];
     renderVehicles();
     renderWorkOrders();
     renderAlerts();
@@ -12,7 +15,8 @@ export function mount() {
 }
 
 export function unmount() {
-    // cleanup
+    cleanupFns.forEach(fn => fn && fn());
+    cleanupFns = [];
 }
 
 function renderVehicles() {

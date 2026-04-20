@@ -3,11 +3,14 @@
     <div class="wod-header">
         <a href="/work-orders" class="wod-back-link" data-link>&larr; Back</a>
         
-        <div class="wod-title-row">
-            <h1 class="wod-title" id="wod-title-id">WO-####</h1>
-            <div class="wod-pills" id="wod-header-pills">
-                <!-- Pills will be inserted here -->
+        <div class="wod-header-top">
+            <div class="wod-title-row">
+                <h1 class="wod-title" id="wod-title-id">WO-####</h1>
+                <div class="wod-pills" id="wod-header-pills">
+                    <!-- Pills will be inserted here -->
+                </div>
             </div>
+            <button class="button inverted" id="wod-close-btn" style="display: none;">Close Work Order</button>
         </div>
         
         <p class="wod-subtitle" id="wod-subtitle-dates">
@@ -61,36 +64,15 @@
 
             <!-- Repair Log -->
             <div class="wod-card">
-                <h2 class="wod-card-title">Repair Log (2)</h2>
-                <div class="wod-repair-log">
-                    <div class="wod-log-item">
-                        <div class="wod-log-indicator">1</div>
-                        <div class="wod-log-content">
-                            <div class="wod-log-header">
-                                <h3>Initial Inspection</h3>
-                                <span>0.5h</span>
-                            </div>
-                            <p>Confirmed coolant leak at upper radiator hose. Hose is cracked and needs replacement. Coolant level critically low.</p>
-                            <small class="wod-log-meta" id="wod-log-meta-1">--</small>
-                        </div>
-                    </div>
-                    <div class="wod-log-item">
-                        <div class="wod-log-indicator wod-log-indicator--orange">2</div>
-                        <div class="wod-log-content">
-                            <div class="wod-log-header">
-                                <h3>Radiator Hose Replacement</h3>
-                                <span>1.5h</span>
-                            </div>
-                            <p>Removed damaged hose, replaced with new OEM hose. Flushed coolant system and refilled with correct mixture.</p>
-                            <small class="wod-log-meta" id="wod-log-meta-2">--</small>
-                        </div>
-                    </div>
+                <h2 class="wod-card-title" id="wod-repair-log-title">Repair Log (0)</h2>
+                <div class="wod-repair-log" id="wod-repair-log-container">
+                    <!-- Dynamic logs injected here -->
                 </div>
             </div>
 
             <!-- Parts Used -->
             <div class="wod-card">
-                <h2 class="wod-card-title">Parts Used (2)</h2>
+                <h2 class="wod-card-title" id="wod-parts-title">Parts Used (0)</h2>
                 <table class="wod-table">
                     <thead>
                         <tr>
@@ -100,23 +82,12 @@
                             <th class="wod-align-right">Total</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Radiator Hose (Upper)</td>
-                            <td>1</td>
-                            <td>EGP 850</td>
-                            <td class="wod-align-right wod-font-bold">EGP 850</td>
-                        </tr>
-                        <tr>
-                            <td>Coolant / Antifreeze (1L)</td>
-                            <td>5</td>
-                            <td>EGP 120</td>
-                            <td class="wod-align-right wod-font-bold">EGP 600</td>
-                        </tr>
+                    <tbody id="wod-parts-tbody">
+                        <!-- Dynamic parts injected here -->
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="4" class="wod-align-right wod-font-bold wod-table-footer">Total Parts: EGP 1,450</td>
+                            <td colspan="4" class="wod-align-right wod-font-bold wod-table-footer" id="wod-parts-footer">Total Parts: EGP 0</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -127,15 +98,23 @@
                 <h2 class="wod-card-title">Repair Cost Summary</h2>
                 <div class="wod-summary-row">
                     <span>Parts Cost</span>
-                    <span>EGP 1,450</span>
+                    <span id="wod-summary-parts">EGP 0</span>
                 </div>
                 <div class="wod-summary-row">
                     <span>Labor Cost</span>
-                    <span>EGP 0</span>
+                    <span id="wod-summary-labor">EGP 0</span>
                 </div>
                 <div class="wod-summary-row wod-summary-total">
                     <span>Total Repair Cost</span>
-                    <span id="wod-total-cost" class="wod-color-primary">EGP 1,450</span>
+                    <span id="wod-total-cost" class="wod-color-primary">EGP 0</span>
+                </div>
+                <div class="wod-summary-row">
+                    <span>Vehicle Market Value</span>
+                    <span id="wod-summary-market">EGP 320,000</span>
+                </div>
+                <div class="wod-summary-row">
+                    <span>Cost-to-Value Ratio</span>
+                    <span id="wod-summary-ratio" style="color: #10b981; font-weight: 700;">0%</span>
                 </div>
             </div>
 

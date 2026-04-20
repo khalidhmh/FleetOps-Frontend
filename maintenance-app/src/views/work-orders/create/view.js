@@ -5,10 +5,12 @@ let attachedFiles = [];
 let cleanupFns = [];
 
 // ─── Populate vehicle select ─────────────────────────────────────────────────
+// ─── Populate vehicle select ─────────────────────────────────────────────────
 function populateVehicles() {
     const sel = document.getElementById("cwo-vehicle");
     if (!sel) return;
-    WorkOrdersApi.getVehicles().forEach(v => {
+    const vehicles = WorkOrdersApi.getVehicles();
+    vehicles.forEach(v => {
         const opt = document.createElement("option");
         opt.value = v.plate;
         opt.textContent = `${v.plate} — ${v.category} — ${v.model} (${v.status})`;
@@ -165,44 +167,6 @@ function collectFormData(form) {
     };
 }
 
-// ─── LocalStorage helpers ────────────────────────────────────────────────────
-const LS_KEY = "maintenance-app:work-orders";
-
-function loadStoredOrders() {
-    try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
-    catch { return []; }
-}
-
-function saveOrder(data) {
-    const orders = loadStoredOrders();
-    const nextId = orders.length > 0
-        ? "WO-" + (parseInt(orders[0].id.replace("WO-", ""), 10) + 1)
-        : "WO-3000";
-
-    const newOrder = {
-        id:          nextId,
-        vehicle:     data.vehicle,
-        type:        data.type,
-        description: data.description,
-        priority:    data.priority,
-        startDate:   data.startDate,
-        mechanic:    data.mechanic || "Unassigned",
-        status:      "Open",
-        cost:        "—",
-        files:       data.files,
-        opened:      new Date().toLocaleDateString("en-GB", {
-                         day: "2-digit", month: "short", year: "2-digit"
-                     }).replace(",", ""),
-        updated:     "Just now",
-        _createdAt:  new Date().toISOString(),
-    };
-
-    orders.unshift(newOrder);   // newest first
-    localStorage.setItem(LS_KEY, JSON.stringify(orders));
-    console.log("[WorkOrders] Saved to localStorage:", newOrder);
-    return newOrder;
-}
-
 // ─── Submit handler ──────────────────────────────────────────────────────────
 function initSubmit(form) {
     const onSubmit = e => {
@@ -210,14 +174,13 @@ function initSubmit(form) {
         if (!validateForm(form)) return;
 
         const data = collectFormData(form);
-        saveOrder(data);
 
-        // ── Future API hook ─────────────────────────────────────────────────
-        // fetch("/api/work-orders", { method: "POST", body: JSON.stringify(data),
-        //   headers: { "Content-Type": "application/json" } })
-        //   .then(r => r.json()).then(() => navigate());
-
-        navigate("/work-orders");
+        try {
+            WorkOrdersApi.createOrder(data);
+            navigate("/work-orders");
+        } catch (err) {
+            alert("Failed to create work order. Please try again.");
+        }
     };
     form.addEventListener("submit", onSubmit);
     cleanupFns.push(() => form.removeEventListener("submit", onSubmit));
@@ -234,12 +197,12 @@ export function mount() {
     cleanupFns = [];
     fileListCleanup = [];
     attachedFiles = []; // reset on each mount
-
+    
     populateVehicles();
     initTypeCards();
     initPriorityPills();
     initDropzone();
-
+    
     const form = document.getElementById("cwo-form");
     if (form) initSubmit(form);
 

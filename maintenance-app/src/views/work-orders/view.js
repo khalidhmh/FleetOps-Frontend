@@ -97,11 +97,11 @@ function renderTable() {
     }
 
     tbody.innerHTML = pageRows.map((o, idx) => {
-        const isNew = o._source === "local";
+        const isNew = o._source === "local" || o._source === "remote";
         return `
-        <tr${isNew ? ' style="background:rgba(244,102,57,0.04)"' : ''}>
+        <tr${isNew && o._source === "local" ? ' style="background:rgba(244,102,57,0.04)"' : ''}>
             <td class="wo-td wo-td--check"><input type="checkbox" aria-label="Select ${o.id}" /></td>
-            <td class="wo-td wo-td--id">${o.id}${isNew ? ' <span style="font-size:10px;color:var(--color-primary);font-weight:700">NEW</span>' : ''}</td>
+            <td class="wo-td wo-td--id">${o.id}</td>
             <td class="wo-td">${o.vehicle}</td>
             <td class="wo-td">${pillType(o.type)}</td>
             <td class="wo-td">${mechanicCell(o.mechanic)}</td>
