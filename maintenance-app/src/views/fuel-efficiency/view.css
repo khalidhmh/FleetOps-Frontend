@@ -296,7 +296,7 @@
 .fuel-row--review {
     background: linear-gradient(
         90deg,
-        color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)) 0%,
+        rgb(255, 251, 235),
         transparent 100%
     );
 }
