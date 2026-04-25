@@ -1,4 +1,4 @@
-﻿.fuel-page {
+.fuel-page {
     padding: 24px;
     display: grid;
     gap: 20px;
@@ -450,20 +450,49 @@
     z-index: 2;
 }
 
+@keyframes fuelBarRise {
+    from { height: 0; }
+    to { height: var(--bar-height); }
+}
+
 .fuel-chart__bar-group {
     min-width: 0;
     height: 100%;
     display: grid;
+    grid-template-rows: 1fr auto;
     align-items: end;
     justify-items: stretch;
+    position: relative;
+    cursor: default;
+}
+
+.fuel-chart__bar-bg {
+    grid-row: 1;
+    grid-column: 1;
+    width: calc(100% + 12px);
+    margin-left: -6px;
+    height: 100%;
+    background: transparent;
+    transition: background-color 0.2s ease;
+    border-radius: 6px 6px 0 0;
+    z-index: -1;
+}
+
+.fuel-chart__bar-group:hover .fuel-chart__bar-bg {
+    background: var(--color-border);
 }
 
 .fuel-chart__bar {
+    grid-row: 1;
+    grid-column: 1;
     width: 100%;
     min-height: 8px;
     height: var(--bar-height);
     border-radius: 6px 6px 0 0;
     background: var(--color-chip-neutral-bg);
+    position: relative;
+    z-index: 1;
+    animation: fuelBarRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .fuel-chart__bar.is-above-average {
@@ -471,11 +500,46 @@
 }
 
 .fuel-chart__label {
+    grid-row: 2;
+    grid-column: 1;
     margin-top: 10px;
     color: var(--color-text-body);
     font-size: var(--font-size-xs);
     text-align: center;
     white-space: nowrap;
+    position: relative;
+    z-index: 1;
+}
+
+.fuel-chart-tooltip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    box-shadow: var(--shadow-sm);
+    z-index: 1050;
+    pointer-events: none;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fuel-chart-tooltip.is-visible {
+    display: flex;
+}
+
+.fuel-chart-tooltip__title {
+    color: var(--color-text-title);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+}
+
+.fuel-chart-tooltip__value {
+    color: var(--color-text-body);
+    font-size: var(--font-size-xs);
 }
 
 .fuel-table--comparator tbody td:nth-child(1) {

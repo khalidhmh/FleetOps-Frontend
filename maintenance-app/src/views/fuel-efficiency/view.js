@@ -1,6 +1,4 @@
-﻿import FuelApi from "../../services/api/fuel.js";
-import { getSettings } from "../../services/api/settings.js";
-import { logAuditAction } from "../../services/api/auditLogger.js";
+import FuelApi from "../../services/api/fuel.js";
 import WorkOrdersApi from "../../services/api/work-orders.js";
 
 const RANGE_OPTIONS = [
@@ -9,12 +7,12 @@ const RANGE_OPTIONS = [
     { value: "q1-2026", label: "Q1 2026" },
     { value: "custom", label: "Custom" },
 ];
+const DEFAULT_FUEL_DISCREPANCY_THRESHOLD = 10;
 
 let root = null;
 let appState = {
     records: [],
     invoices: [],
-    settings: null,
     vehicles: [],
     activeTab: "audit",
     activeRange: "this-month",
@@ -58,7 +56,7 @@ function getDiscrepancyPct(record) {
 }
 
 function getThreshold() {
-    return appState.settings?.fleetPolicies?.fuelDiscrepancyPct ?? 10;
+    return DEFAULT_FUEL_DISCREPANCY_THRESHOLD;
 }
 
 function getFlagMeta(discrepancy) {
@@ -447,11 +445,11 @@ function renderChart(rows, fleetAverage) {
             const height = `${Math.min((row.avgEfficiencyKmL / maxY) * 100, 100)}%`;
 
             return `
-                <div class="fuel-chart__bar-group">
+                <div class="fuel-chart__bar-group" data-vehicle="${row.vehiclePlate}" data-efficiency="${formatEfficiency(row.avgEfficiencyKmL)}">
+                    <div class="fuel-chart__bar-bg"></div>
                     <div
                         class="fuel-chart__bar ${row.avgEfficiencyKmL >= fleetAverage ? "is-above-average" : ""}"
                         style="--bar-height: ${height};"
-                        title="${row.vehiclePlate}: ${formatEfficiency(row.avgEfficiencyKmL)}"
                     ></div>
                     <span class="fuel-chart__label">${row.vehiclePlate}</span>
                 </div>
@@ -578,7 +576,9 @@ function exportComparatorCsv() {
             record.vehiclePlate,
             record.vehicleType,
             record.avgEfficiencyKmL.toFixed(1),
-            (((record.avgEfficiencyKmL - fleetAverage) / fleetAverage) * 100).toFixed(1),
+            fleetAverage
+                ? (((record.avgEfficiencyKmL - fleetAverage) / fleetAverage) * 100).toFixed(1)
+                : "0.0",
             record.trend.toFixed(1),
         ]),
     ]);
@@ -683,20 +683,6 @@ async function handleSubmit(event) {
             supplier,
         });
 
-        await logAuditAction(
-            "MEC-001",
-            "Mechanic",
-            "Created",
-            "FuelInvoice",
-            result.invoice.id,
-            null,
-            {
-                vehiclePlate,
-                litersFilled,
-                period: result.invoice.period,
-            },
-        );
-
         const nextState = await FuelApi.getFuelState();
         appState.records = nextState.records;
         appState.invoices = nextState.invoices;
@@ -719,18 +705,45 @@ function handleKeydown(event) {
     }
 }
 
+function handleMouseOver(event) {
+    const group = event.target.closest(".fuel-chart__bar-group");
+    if (group) {
+        const tooltip = root.querySelector("#fuel-chart-tooltip");
+        if (tooltip) {
+            root.querySelector("#fuel-tooltip-vehicle").textContent = group.dataset.vehicle;
+            root.querySelector("#fuel-tooltip-efficiency").textContent = `Efficiency: ${group.dataset.efficiency}`;
+            tooltip.classList.add("is-visible");
+        }
+    }
+}
+
+function handleMouseMove(event) {
+    const tooltip = root.querySelector("#fuel-chart-tooltip");
+    if (tooltip && tooltip.classList.contains("is-visible")) {
+        const offset = 14;
+        tooltip.style.left = `${event.clientX + offset}px`;
+        tooltip.style.top = `${event.clientY + offset}px`;
+    }
+}
+
+function handleMouseOut(event) {
+    const group = event.target.closest(".fuel-chart__bar-group");
+    if (group) {
+        const tooltip = root.querySelector("#fuel-chart-tooltip");
+        if (tooltip) {
+            tooltip.classList.remove("is-visible");
+        }
+    }
+}
+
 export async function mount(rootElement) {
     root = rootElement;
 
     try {
-        const [fuelState, settings] = await Promise.all([
-            FuelApi.getFuelState(),
-            getSettings(),
-        ]);
+        const fuelState = await FuelApi.getFuelState();
 
         appState.records = fuelState.records;
         appState.invoices = fuelState.invoices;
-        appState.settings = settings;
         appState.vehicles = WorkOrdersApi.getVehicles();
         appState.customPeriod = getLatestPeriod();
         appState.activeTab = "audit";
@@ -740,6 +753,9 @@ export async function mount(rootElement) {
         root.addEventListener("click", handleClick);
         root.addEventListener("change", handleChange);
         root.addEventListener("submit", handleSubmit);
+        root.addEventListener("mouseover", handleMouseOver);
+        root.addEventListener("mousemove", handleMouseMove);
+        root.addEventListener("mouseout", handleMouseOut);
         document.addEventListener("keydown", handleKeydown);
     } catch (error) {
         console.error("Failed to load fuel page", error);
@@ -760,12 +776,14 @@ export function unmount() {
     root.removeEventListener("click", handleClick);
     root.removeEventListener("change", handleChange);
     root.removeEventListener("submit", handleSubmit);
+    root.removeEventListener("mouseover", handleMouseOver);
+    root.removeEventListener("mousemove", handleMouseMove);
+    root.removeEventListener("mouseout", handleMouseOut);
     document.removeEventListener("keydown", handleKeydown);
     root = null;
     appState = {
         records: [],
         invoices: [],
-        settings: null,
         vehicles: [],
         activeTab: "audit",
         activeRange: "this-month",

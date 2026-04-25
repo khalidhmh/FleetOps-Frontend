@@ -1,7 +1,4 @@
-import api from "../../../../Server/scripts/api-handler.js";
 import { FUEL_STORAGE_KEY, fuelMockData } from "../storage/fuel.js";
-
-api.setBaseURL("http://localhost:3000");
 
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
 

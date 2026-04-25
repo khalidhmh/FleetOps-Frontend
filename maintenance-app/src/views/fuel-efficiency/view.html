@@ -1,4 +1,4 @@
-﻿<section class="view-page fuel-page">
+<section class="view-page fuel-page">
     <section class="fuel-page__header">
         <div>
             <h1 class="fuel-page__title">Fuel &amp; Efficiency</h1>
@@ -115,6 +115,11 @@
         <article class="fuel-chart-card">
             <div class="fuel-chart-card__header">
                 <h2>Fuel Efficiency by Vehicle (km/L)</h2>
+            </div>
+
+            <div class="fuel-chart-tooltip" id="fuel-chart-tooltip">
+                <strong class="fuel-chart-tooltip__title" id="fuel-tooltip-vehicle"></strong>
+                <span class="fuel-chart-tooltip__value" id="fuel-tooltip-efficiency"></span>
             </div>
 
             <div class="fuel-chart" id="fuel-efficiency-chart">

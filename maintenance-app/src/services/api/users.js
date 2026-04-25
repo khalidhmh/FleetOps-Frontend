@@ -1,4 +1,3 @@
-import api from "../../../../Server/scripts/api-handler.js";
 import {usersMockData} from "../storage/users.js";
 
 // ─── Global Setup ─────────────────────────────────────────────────────────────
