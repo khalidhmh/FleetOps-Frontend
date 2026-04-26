@@ -17,6 +17,11 @@ export function unmount() {
     console.log("Alerts & Inspections view unmounted");
 }
 
+// ─── SPA Navigation helper ───────────────────────────────────────────────────
+function navigate(path) {
+    window.history.pushState({}, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+}
 
 function renderOdometer(alerts){
     const tbody = document.getElementById("odometer-table-body")
@@ -34,11 +39,15 @@ function renderOdometer(alerts){
             <td>${alert.threshold} km</td>
             <td><span class="chip ${alert.status}">${alert.status === 'warning' ? 'Due Soon' : 'OK'}</span></td>
             <td>
-                <button class="button primary sm">
+                ${alert.status === 'success' ? '' : `<button class="button primary sm work-order-btn">
                     <i data-lucide="plus"></i> Work Order
-                </button>
+                </button>`}
             </td>
-        </tr>`).join('')
+        </tr>`).join('');
+
+    tbody.querySelectorAll('.work-order-btn').forEach(btn => {
+        btn.addEventListener('click', () => navigate('/work-orders'));
+    });
 }
 
 function renderInsurance(alerts) {
@@ -56,12 +65,23 @@ function renderInsurance(alerts) {
             <td>${alert.policyNumber}</td>
             <td>${alert.expiryDate}</td>
             <td class="${alert.status === 'warning' ? 'text-danger' : ''}">${alert.daysRemaining} Days</td>
-            <td><span class="chip ${alert.status}">${alert.status === 'warning' ? 'Expiring Soon' : 'Active'}</span></td>
+            <td><span class="chip ${alert.status}">${alert.status === 'warning' ? 'Expiring Soon' : 'Renewed'}</span></td>
             <td>
-                <button class="button primary sm">Renew Policy</button>
+                ${alert.status === 'success' ? '' : `<button class="button primary sm mark-renewed-btn" data-id="${alert.id}">Mark as Renewed</button>`}
             </td>
         </tr>
     `).join('');
+
+    tbody.querySelectorAll('.mark-renewed-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const alert = AlertData.insurance.find(a => a.id === id);
+            if (alert) {
+                alert.status = "success";
+            }
+            renderInsurance(AlertData.insurance);
+        });
+    });
 }
 
 function renderInspection(alerts) {
@@ -69,7 +89,7 @@ function renderInspection(alerts) {
     if (!tbody) return;
 
     tbody.innerHTML = alerts.map(alert => `
-        <tr>
+        <tr class="${alert.status === 'success' ? 'row-completed' : ''}">
             <td>
                 <div class="vehicle-cell">
                     <span class="vehicle-plate">${alert.vehiclePlate}</span>
@@ -79,12 +99,23 @@ function renderInspection(alerts) {
             <td>${alert.lastInspection}</td>
             <td>${alert.nextDueDate}</td>
             <td class="${alert.status === 'danger' ? 'text-danger' : ''}">${alert.daysRemaining}</td>
-            <td><span class="chip ${alert.status}">${alert.status === 'danger' ? 'Overdue' : 'OK'}</span></td>
+            <td><span class="chip ${alert.status}">${alert.status === 'danger' ? 'Overdue' : 'Completed'}</span></td>
             <td>
-                <button class="button primary sm">Schedule</button>
+                ${alert.status === 'success' ? '' : `<button class="button primary sm mark-complete-btn" data-id="${alert.id}">Mark as complete</button>`}
             </td>
         </tr>
     `).join('');
+
+    tbody.querySelectorAll('.mark-complete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const alert = AlertData.inspection.find(a => a.id === id);
+            if (alert) {
+                alert.status = "success";
+            }
+            renderInspection(AlertData.inspection);
+        });
+    });
 }
 
 function renderParts(alerts) {
@@ -105,10 +136,14 @@ function renderParts(alerts) {
             <td>${alert.lifespan}</td>
             <td><span class="chip ${alert.status}">${alert.status === 'warning' ? 'Low Life' : 'Good'}</span></td>
             <td>
-                <button class="button primary sm">Replace</button>
+                ${alert.status === 'success' ? '' : `<button class="button primary sm work-order-btn">+ Work Order</button>`}
             </td>
         </tr>
     `).join('');
+
+    tbody.querySelectorAll('.work-order-btn').forEach(btn => {
+        btn.addEventListener('click', () => navigate('/work-orders'));
+    });
 }
 
 function initTabs() {
