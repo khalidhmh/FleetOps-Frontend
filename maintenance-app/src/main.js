@@ -7,7 +7,6 @@ import {
 initRouter({ outletId: "app-content" });
 createIcons({ icons });
 
-window.__refreshIcons = () => createIcons({ icons });
 
 window.addEventListener("route:changed", () => {
     createIcons({ icons });

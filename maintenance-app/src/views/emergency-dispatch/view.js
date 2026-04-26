@@ -4,6 +4,8 @@ import emergencyDispatchData from "../../services/storage/emergency-dispatch.js"
 let selectedIncidentId = null;
 let pendingMechanicId = null;
 
+window.__refreshIcons = () => createIcons({ icons });
+
 export function mount(root) {
     if (emergencyDispatchData.incidents && emergencyDispatchData.incidents.length > 0) {
         selectedIncidentId = emergencyDispatchData.incidents[0].id;
