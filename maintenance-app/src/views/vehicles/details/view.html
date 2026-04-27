@@ -1,57 +1,158 @@
 <section class="view-page vehicle-details-page stack">
   <main>
     <div class="details-header">
-      <a href="/vehicles" class="btn-back" data-link>&larr; Back to Vehicles</a>
-      <h1 id="vehicle-title" class="vehicle-title">Vehicle Details</h1>
+      <div class="header-main">
+        <div class="status-badge" id="info-status"></div>
+        <a href="/vehicles" class="btn-back" data-link>&larr; Back to Vehicles</a>
+        <div class="header-title-row">
+          <h1 id="vehicle-title" class="vehicle-title"></h1>
+          <div class="badge-group">
+            <span id="info-type-badge" class="badge-chip secondary"></span>
+            <span id="info-status-badge" class="badge-chip"></span>
+          </div>
+        </div>
+        <div class="header-meta-row">
+          <span id="info-make"></span>
+          <span class="separator">·</span>
+          <span id="info-value"></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/work-orders/create" class="button primary" data-link>
+          <i data-lucide="plus"></i>    
+          Create Work Order
+        </a>
+      </div>
     </div>
 
-    <div id="vehicle-details-content" class="details-grid">
-      <div class="details-card">
-        <h3>Vehicle Information</h3>
-        <div class="info-row">
-          <span>License Plate:</span> <span id="info-plate"></span>
+    <div class="details-layout">
+      <div id="vehicle-details-content" class="details-grid">
+        <div class="stats-grid full-width">
+          <div class="stat-box">
+            <span class="stat-label">ODOMETER</span>
+            <span class="stat-value" id="info-odometer"></span>
+            <span class="stat-subtext">Current reading</span>
+          </div>        
+          <div class="stat-box">
+            <span class="stat-label">NEXT SERVICE DUE</span>
+            <span class="stat-value" id="info-next-service"></span>
+            <span class="stat-subtext">Scheduled for</span>
+          </div>
+          <div class="stat-box warning">
+            <span class="stat-label">INSURANCE EXPIRY</span>
+            <span class="stat-value" id="info-insurance"></span>
+            <span class="stat-subtext">Action required soon</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">LAST SERVICE</span>
+            <span class="stat-value" id="info-last-service"></span>
+            <span class="stat-subtext">Completed on</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">MAX CAPACITY</span>
+            <span class="stat-value" id="info-capacity"></span>
+            <span class="stat-subtext" id="info-volume"></span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">TOTAL REPAIR COST</span>
+            <span class="stat-value" id="info-repair-cost"></span>
+            <span class="stat-subtext">Cumulative lifetime</span>
+          </div>
         </div>
-        <div class="info-row">
-          <span>Type:</span> <span id="info-type"></span>
+
+        <div class="details-card vehicle-health full-width">
+          <h3>Vehicle Health</h3>
+          <div class="health-row">
+            <div class="health-label">
+              <span>Engine Oil</span>
+              <span id="health-oil-text">--%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div id="health-oil-bar" class="progress-bar"></div>
+            </div>
+          </div>
+          <div class="health-row">
+            <div class="health-label">
+              <span>Brake Pads</span>
+              <span id="health-brakes-text">--%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div id="health-brakes-bar" class="progress-bar"></div>
+            </div>
+          </div>
+          <div class="health-row">
+            <div class="health-label">
+              <span>Battery</span>
+              <span id="health-battery-text">--%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div id="health-battery-bar" class="progress-bar"></div>
+            </div>
+          </div>
         </div>
-        e Plate: Type: Make & Model: Status:
-        <div class="info-row">
-          <span>Make & Model:</span> <span id="info-make"></span>
+
+        <!-- CTV Analysis Card -->
+        <div class="details-card ctv-analysis full-width">
+          <h3>Cost-to-Value Analysis</h3>
+          <div class="ctv-content">
+            <div class="ctv-header">
+              <div class="ctv-ratio-group">
+                <span class="stat-label">CTV RATIO</span>
+                <span class="ctv-value" id="ctv-ratio-value">--%</span>
+              </div>
+              <div class="ctv-status-group">
+                <span class="stat-label">STATUS</span>
+                <span class="ctv-status" id="ctv-status-text">--</span>
+              </div>
+            </div>
+            
+            <div class="ctv-progress-wrapper">
+              <div class="ctv-progress-container">
+                <div id="ctv-progress-bar" class="ctv-progress-bar"></div>
+                <div class="ctv-threshold-marker" style="left: 50%;"></div>
+                <div class="ctv-danger-zone" style="left: 50%; width: 50%;"></div>
+              </div>
+              <div class="ctv-labels">
+                <span>0%</span>
+                <span class="ctv-threshold-label" style="left: 50%;">50% threshold</span>
+                <span>100%</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="info-row">
-          <span>Status:</span> <span id="info-status"></span>
+
+        <!-- Maintenance History Card -->
+        <div class="details-card maintenance-history full-width">
+          <h3>Maintenance History</h3>
+          <div class="table-responsive">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>WO ID</th>
+                  <th>Type</th>
+                  <th>Mechanic</th>
+                  <th>Status</th>
+                  <th>Repair Cost</th>
+                  <th>Opened</th>
+                  <th>Closed</th>
+                </tr>
+              </thead>
+              <tbody id="maintenance-history-tbody">
+                <!-- Rows will be inserted here dynamically -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div class="details-card">
-        <h3>Operational Data</h3>
-        <div class="info-row">
-          <span>Odometer:</span> <span id="info-odometer"></span>
+      <div class="details-sidebar">
+        <!-- Fuel Logs Card -->
+        <div class="details-card fuel-logs-card">
+          <h3>Recent Fuel Logs</h3>
+          <div id="fuel-logs-container" class="fuel-logs-container">
+            <!-- Fuel logs will be inserted here dynamically -->
+          </div>
         </div>
-        <div class="info-row">
-          <span>Market Value:</span> <span id="info-value"></span>
-        </div>
-        <div class="info-row">
-          <span>CTV:</span> <span id="info-ctv"></span>
-        </div>
-      </div>
-
-      <div class="details-card">
-        <h3>Maintenance History</h3>
-        <div class="info-row">
-          <span>Last Service:</span> <span id="info-last-service"></span>
-        </div>
-        <div class="info-row">
-          <span>Next Service:</span> <span id="info-next-service"></span>
-        </div>
-        <div class="info-row">
-          <span>Insurance Expiry:</span> <span id="info-insurance"></span>
-        </div>
-      </div>
-
-      <div class="details-card full-width">
-        <h3>Additional Details</h3>
-        <p id="info-details"></p>
       </div>
     </div>
   </main>
