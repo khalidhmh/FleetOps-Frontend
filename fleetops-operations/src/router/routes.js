@@ -134,6 +134,15 @@ export const routes = [
             js: "/src/views/preview-page/view.js",
         },
     },
+    {
+        path: "/drivers-page",
+        title: "Drivers Page",
+        view: {
+            html: "/src/views/drivers-page/view.html",
+            css: "/src/views/drivers-page/view.css",
+            js: "/src/views/drivers-page/view.js",
+        },
+    },
 ];
 
 export const notFoundRoute = {

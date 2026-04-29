@@ -1,8 +1,129 @@
+<link rel="stylesheet" href="/src/views/drivers/view.css">
 <section class="view-page app-section drivers-page stack">
-    <section class="card stack">
-        <h1 class="heading-lg">Drivers</h1>
-        <p>This module is ready for implementation.</p>
-        <p class="helper-text">Use this section to build the drivers workflow.</p>
-    </section>
+    <div class="row page-header">
+        <div class="stack header-titles">
+            <h1 class="heading-xl">Drivers</h1>
+            <p class="helper-text" id="drivers-count">10 drivers · 4 on route</p>
+        </div>
+    </div>
+    
+    <!-- Summary cards -->
+    <div class="grid tokens summary-grid">
+        <div class="card stack summary-card">
+            <span class="label">ON ROUTE</span>
+            <span class="heading-lg" id="summary-on-route">4</span>
+        </div>
+        <div class="card stack summary-card">
+            <span class="label">AVAILABLE</span>
+            <span class="heading-lg" id="summary-available">3</span>
+        </div>
+        <div class="card stack summary-card">
+            <span class="label">AVG SCORE</span>
+            <span class="heading-lg" id="summary-avg-score">89</span>
+        </div>
+        <div class="card stack summary-card">
+            <span class="label">PENDING COD</span>
+            <span class="heading-lg" id="summary-pending-cod">SAR 0</span>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="row toolbar">
+        <div class="search-field search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="drivers-search" placeholder="Search by name or ID..." />
+        </div>
+        <div class="row filter-chips">
+            <button class="chip success">All</button>
+            <button class="chip neutral">On Route</button>
+            <button class="chip neutral">Available</button>
+            <button class="chip neutral">On Break</button>
+            <button class="chip neutral">Off Duty</button>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div id="drivers-grid" class="grid main drivers-grid">
+        <!-- Hydrated by JS -->
+    </div>
 </section>
 
+<!-- Details Modal -->
+<div class="modal-overlay" id="driver-modal-overlay">
+    <div class="modal-panel" id="driver-modal-panel">
+        <div class="modal-header row">
+            <div class="row">
+                <div class="avatar-circle modal-avatar">OK</div>
+                <div class="stack modal-profile-info">
+                    <div class="row">
+                        <strong class="heading-md modal-name">Omar Khalid</strong>
+                        <span class="chip success modal-status">On Route</span>
+                    </div>
+                    <span class="helper-text modal-id">DRV-101 - Morning Shift</span>
+                    <span class="helper-text modal-phone"></span>
+                    <span class="helper-text modal-email"></span>
+                </div>
+            </div>
+            <button id="close-modal-btn" class="icon-button outlined modal-close-btn">×</button>
+        </div>
+        
+        <div class="modal-content stack modal-content-inner">
+            <!-- License & Duty -->
+            <div class="grid main modal-section">
+                <div class="card stack">
+                    <span class="label">Driver License</span>
+                    <div class="row detail-row"><span class="helper-text">License No.</span><strong class="modal-license">SA-2021-4582</strong></div>
+                    <div class="row detail-row"><span class="helper-text">Type</span><strong class="modal-type">Heavy Vehicle</strong></div>
+                    <div class="row detail-row"><span class="helper-text">Expires</span><strong class="modal-expiry">20 Mar 2028</strong></div>
+                </div>
+                <div class="card stack">
+                    <span class="label">Vehicle Details</span>
+                    <div class="row detail-row"><span class="helper-text">Vehicle ID</span><strong class="modal-vehicle-id">TRK-022</strong></div>
+                    <div class="row detail-row"><span class="helper-text">Plate No</span><strong class="modal-vehicle-plate">ABC-1234</strong></div>
+                    <div class="row detail-row"><span class="helper-text">Current Status</span><span class="chip success modal-duty-status">On Route</span></div>
+                </div>
+            </div>
+
+            <!-- COD & Break -->
+            <div class="grid main modal-section mt">
+                <div class="card stack">
+                    <span class="label">COD Collection</span>
+                    <p class="helper-text text-success">All COD collected & submitted — no pending amounts.</p>
+                </div>
+                <div class="card stack">
+                    <span class="label">Break Tracking</span>
+                    <div class="row detail-row"><span class="helper-text">Break 1</span><strong>9:00 AM - 9:20 AM</strong></div>
+                    <div class="row detail-row"><span class="helper-text">Total break time</span><strong>20m</strong></div>
+                </div>
+            </div>
+
+            <!-- Stats Boxes -->
+            <div class="grid compact modal-stats-grid">
+                <div class="card stack stat-card"><span class="heading-lg text-primary modal-safety-score">93/100</span><span class="helper-text">Safety Score</span></div>
+                <div class="card stack stat-card"><span class="heading-lg modal-total-deliveries">595</span><span class="helper-text">Total Deliveries</span></div>
+                <div class="card stack stat-card"><span class="heading-lg modal-on-time-rate">90%</span><span class="helper-text">On-Time Rate</span></div>
+                <div class="card stack stat-card"><span class="heading-lg modal-rating">4.9</span><span class="helper-text">Rating</span></div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="card chart-container">
+                    <canvas id="performanceBarChart"></canvas>
+                </div>
+                <div class="card chart-container">
+                    <canvas id="statusDoughnutChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Recent Deliveries -->
+            <div class="card stack recent-deliveries-card">
+                <span class="label">Recent Deliveries</span>
+                <div class="stack recent-deliveries-list">
+                    <div class="row delivery-item"><span class="helper-text">ORD-5000 Fresh Market</span><span class="chip success">Delivered</span></div>
+                    <div class="row delivery-item"><span class="helper-text">ORD-5001 Tech Solutions</span><span class="chip success">Delivered</span></div>
+                    <div class="row delivery-item-last"><span class="helper-text">ORD-5002 Home Decor</span><span class="chip success">Delivered</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
