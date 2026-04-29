@@ -1,0 +1,140 @@
+.break-rest-view {
+    background-color: var(--color-surface-low);
+    min-height: 100vh;
+    padding: 24px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.break-rest-view .status-banner {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.break-rest-view .dark-card {
+    background-color: var(--color-surface-highest);
+}
+
+.break-rest-view .text-center {
+    text-align: center;
+}
+
+.break-rest-view .time-display {
+    font-size: clamp(40px, 10vw, 56px);
+    font-family: var(--font-family-display);
+    color: var(--color-text-title);
+    margin: 8px 0;
+    font-weight: 700;
+}
+
+.break-rest-view .timer-display {
+    display: none;
+    color: var(--color-primary-dim);
+}
+
+.break-rest-view .flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.break-rest-view .rest-time {
+    font-size: var(--font-size-xl);
+    color: var(--color-text-title);
+    font-family: var(--font-family-display);
+    margin-top: 4px;
+    font-weight: 700;
+}
+
+.break-rest-view .text-muted {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.break-rest-view .compliance-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.break-rest-view .compliance-title {
+    font-size: var(--font-size-base);
+    color: var(--color-text-title);
+    font-weight: 700;
+    margin: 0;
+}
+
+.break-rest-view .compliance-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-body);
+    line-height: var(--line-height);
+    margin: 0;
+}
+
+.break-rest-view .icon {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+.break-rest-view .warning-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.break-rest-view .btn-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.break-rest-view .action-container {
+    margin-top: auto;
+    padding-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.break-rest-view .start-break-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: var(--font-size-lg);
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.break-rest-view .compliance-note {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* State Classes for Timer Mode */
+.break-rest-view.on-break .main-time-display {
+    display: none;
+}
+
+.break-rest-view.on-break .timer-display {
+    display: block;
+}
+
+.break-rest-view.on-break .goal-text {
+    visibility: hidden;
+}
+
+.break-rest-view.on-break .start-break-btn {
+    opacity: 0.6;
+    pointer-events: none;
+}

@@ -1,0 +1,178 @@
+/* ================================= */
+/*   DIGITAL SIGNATURE — VIEW CSS    */
+/* ================================= */
+
+.digital-signature-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--color-surface-highest);
+    padding-bottom: 100px;
+}
+
+.signature-page-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--color-surface-highest);
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 24px 20px;
+    gap: 24px;
+}
+
+/* Top Bar Refinements */
+.signature-top-bar {
+    background: var(--color-surface-low);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.signature-top-bar .icon-button {
+    color: var(--color-text-title);
+}
+
+/* Form and Signature Tweaks */
+.signature-clear-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+.signature-clear-btn {
+    min-height: 32px;
+    padding: 4px 12px;
+    border-color: var(--color-border);
+    background: var(--color-surface-low);
+    font-size: var(--font-size-xs);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.signature-clear-btn:hover {
+    background: var(--color-surface-strong);
+}
+
+.signature-canvas-wrapper {
+    position: relative;
+    padding: 0;
+    height: 180px;
+    background: var(--color-white);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.signature-pad {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.signature-placeholder {
+    position: absolute;
+    bottom: 16px;
+    left: 20px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--color-outline);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+/* Info Grid Styling */
+.signature-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: var(--color-surface-low);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    margin-top: 8px;
+}
+
+.signature-info-card {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.signature-info-card .label {
+    margin: 0;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.signature-info-card .helper-text {
+    margin: 0;
+}
+
+.signature-info-card .helper-text strong {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-text-title);
+    font-family: var(--font-family-body);
+}
+
+/* Status Message */
+.signature-status-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+}
+
+.signature-status-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    background: #10b981;
+    border-radius: 50%;
+    color: transparent;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.signature-status-text {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-title);
+}
+
+/* Footer */
+.signature-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.signature-disclaimer {
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+}
+
+.signature-confirm-btn {
+    width: 100%;
+    height: 52px;
+    justify-content: center;
+}

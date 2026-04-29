@@ -1,0 +1,97 @@
+/* stop-details/view.css */
+
+.stop-details-view {
+    background: var(--color-surface-highest);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.stop-details-view .custom-top-bar {
+    background: transparent;
+    border: none;
+    padding-top: 24px;
+}
+
+.stop-details-view .custom-top-bar .icon-button {
+    background: transparent;
+    color: var(--color-text-title);
+    width: auto;
+    padding: 0 8px 0 0;
+}
+
+.stop-details-view .custom-top-bar .top-bar-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    flex: 1;
+}
+
+.stop-details-view .custom-page {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 20px 100px;
+}
+
+/* Typography Overrides */
+.stop-details-view .text-primary { color: var(--color-primary-dim); }
+.stop-details-view .text-danger { color: var(--color-danger); }
+.stop-details-view .m-0 { margin: 0; }
+.stop-details-view .mt-4 { margin-top: 16px; }
+.stop-details-view .font-xs { font-size: 10px; }
+.stop-details-view .font-sm { font-size: var(--font-size-base); }
+.stop-details-view .font-bold { font-weight: 700; }
+.stop-details-view .tracking-wide { letter-spacing: 0.05em; }
+
+/* Structural Utilities within scope */
+.stop-details-view .stack-compact { gap: 2px; }
+.stop-details-view .align-start { align-items: flex-start; }
+.stop-details-view .shrink-0 { flex-shrink: 0; }
+.stop-details-view .icon-offset { margin-top: 4px; }
+.stop-details-view .justify-between { justify-content: space-between; }
+.stop-details-view .w-full { width: 100%; }
+.stop-details-view .flex-1 { flex: 1; }
+.stop-details-view .flex-1-5 { flex: 1.5; }
+.stop-details-view .center-content { justify-content: center; }
+
+/* Component specifics */
+.stop-details-view .contact-btn {
+    border: none;
+    background: var(--color-surface);
+    cursor: pointer;
+    text-align: left;
+    padding: 12px;
+    width: 100%;
+}
+
+.stop-details-view .icon-radius {
+    border-radius: 8px;
+}
+
+.stop-details-view .icon-muted-bg {
+    background: var(--color-surface-strong);
+    color: var(--color-text-muted);
+}
+
+.stop-details-view .instruction-text {
+    font-style: italic;
+    font-weight: 500;
+    padding: 16px;
+}
+
+.stop-details-view .issue-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text-body);
+    font-family: inherit;
+    margin-bottom: 12px;
+    resize: vertical;
+}
+
+.stop-details-view .submit-issue-btn {
+    width: 100%;
+}

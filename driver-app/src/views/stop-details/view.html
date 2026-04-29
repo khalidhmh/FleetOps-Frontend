@@ -1,0 +1,108 @@
+<section class="stop-details-view stack">
+    
+    <header class="top-bar custom-top-bar">
+        <a href="/active-route-page" data-link class="icon-button secondary back-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </a>
+        <div class="top-bar-title">Stop Details</div>
+        <div class="row">
+            <div class="top-bar-status-icon"></div>
+            <div class="top-bar-avatar">
+                <img src="/assets/Avatar.png" alt="Driver Avatar" />
+            </div>
+        </div>
+    </header>
+
+    <div class="page custom-page stack stop-details-container">
+        <div class="stack">
+            <div class="row">
+                <div class="label text-primary m-0 data-stop-number">STOP #4</div>
+                <div class="chip neutral data-status">PENDING SCAN</div>
+            </div>
+            <h1 class="heading-lg m-0 data-customer-name">John Doe</h1>
+            <div class="row helper-text align-start">
+                <svg class="shrink-0 icon-offset" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span class="data-address">123 Industrial Parkway,<br>Sector 7G,<br>Downtown Logistics Hub</span>
+            </div>
+        </div>
+
+        <div class="grid compact">
+            <div class="card stack">
+                <div class="row helper-text m-0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    WINDOW
+                </div>
+                <div class="heading-md data-time-window">10:00 —<br>11:00</div>
+                <div class="label text-primary m-0 data-eta">ETA: 18 min</div>
+            </div>
+            <div class="card stack">
+                <div class="row helper-text m-0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                    PAYMENT
+                </div>
+                <div class="heading-md data-payment-amount">EGP 450.00</div>
+                <div class="label text-danger m-0 data-payment-status">COD REQUIRED</div>
+            </div>
+        </div>
+
+        <button class="card row contact-btn justify-between w-full">
+            <div class="row">
+                <div class="icon-button primary icon-radius shrink-0">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </div>
+                <div class="stack stack-compact m-0">
+                    <div class="helper-text font-xs m-0">CONTACT CUSTOMER</div>
+                    <div class="heading-md font-sm data-phone-number">+20 123 456 7890</div>
+                </div>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="helper-text shrink-0"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <div class="stack mt-4">
+            <div class="helper-text font-xs font-bold tracking-wide m-0">SPECIAL INSTRUCTIONS</div>
+            <div class="card instruction-text data-special-instructions">
+                "Leave at door — Ring bell twice"
+            </div>
+        </div>
+
+        <div class="stack mt-4">
+            <div class="row justify-between">
+                <div class="helper-text font-xs font-bold tracking-wide m-0 data-parcel-count-header">PARCEL LIST (0)</div>
+                <div class="chip success m-0 data-parcel-status">Awaiting</div>
+            </div>
+            
+            <div class="parcels-list stack">
+                <!-- Parcel Card Template -->
+                <div class="card row justify-between parcel-card-template" style="display: none;">
+                    <div class="row">
+                        <div class="icon-button icon-muted-bg icon-radius shrink-0">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        </div>
+                        <div class="stack stack-compact">
+                            <div class="heading-md font-sm data-parcel-id">Parcel #QR-9901</div>
+                            <div class="helper-text font-xs m-0 data-parcel-details">STANDARD BOX • 2.4KG</div>
+                        </div>
+                    </div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 data-parcel-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="stack mt-4 report-container">
+            <button class="button secondary w-full center-content report-issue-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                Report Issue
+            </button>
+        </div>
+        <div class="row mt-4 w-full">
+            <button class="button secondary flex-1 navigate-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                NAVIGATE
+            </button>
+            <a href="/qr-scan-page" data-link class="button primary flex-1-5 scan-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><rect x="7" y="7" width="10" height="10"></rect></svg>
+                SCAN PARCEL
+            </a>
+        </div>
+    </div>
+</section>

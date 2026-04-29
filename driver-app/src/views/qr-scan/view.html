@@ -1,0 +1,60 @@
+<div class="stack qr-scan-view">
+    <!--TOP BAR-->
+    <header class="top-bar">
+        <div class="top-bar-avatar">
+            <img src="../../../assets/Avatar.png" alt="driver-avatar">
+        </div>
+        <h2 class="top-bar-title">FleetOps</h2>
+        <i class="top-bar-status-icon"></i>
+    </header>
+
+    <main class="app-content qr-content stack">
+        <div class="row stop-header">
+            <div class="stack stop-info-left">
+                <span class="label current-stop-label">CURRENT STOP</span>
+                <h2 class="heading-xl data-stop-number">Stop #4</h2>
+                <p class="helper-text recipient-text data-customer-name">Recipient: oohn Doe</p>
+            </div>
+            <div class="stack stop-info-right">
+                <span class="chip neutral industrial-chip">INDUSTRIAL VERIFICATION</span>
+                <p class="parcel-count data-parcel-count">2 Parcels</p>
+            </div>
+        </div>
+
+        <div class="scanner-container" title="Click to simulate scanning a parcel">
+            <video class="qr-video" autoplay playsinline muted></video>
+            <div class="conveyor-belt">
+                <div class="belt-dots"></div>
+            </div>
+            <div class="scanner-overlay">
+                <div class="scanner-frame">
+                    <div class="corner tl"></div>
+                    <div class="corner tr"></div>
+                    <div class="corner bl"></div>
+                    <div class="corner br"></div>
+                </div>
+                <div class="scanner-instruction">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="scan-icon"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M7 7h.01"></path><path d="M17 7h.01"></path><path d="M7 17h.01"></path><path d="M17 17h.01"></path></svg>
+                    ALIGN QR CODE WITHIN FRAME
+                </div>
+            </div>
+        </div>
+
+        <div class="stack manifest-section">
+            <h3 class="heading-md row manifest-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-dim)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="manifest-icon"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                Manifest Details
+            </h3>
+
+            <div class="stack parcel-list">
+            </div>
+        </div>
+
+        <div class="stack action-footer">
+            <button class="button secondary proceed-btn" disabled>
+                PROCEED TO DELIVERY →
+            </button>
+            <p class="helper-text verification-text data-verification-text">VERIFY ALL 2 PARCELS TO UNLOCK DELIVERY FLOW</p>
+        </div>
+    </main>
+</div>

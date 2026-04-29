@@ -1,0 +1,93 @@
+<section class="digital-signature-page">
+
+    <!-- TOP BAR -->
+    <header class="top-bar signature-top-bar">
+        <div class="row">
+            <button class="icon-button back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 class="top-bar-title">FleetOps</h1>
+        </div>
+        <div class="row">
+            <div class="stack signature-job-details">
+                <span class="label data-job-id">JOB #8821</span>
+                <span class="helper-text signature-job-type">Proof of Delivery</span>
+            </div>
+            <div class="top-bar-avatar">
+                <img src="/assets/Avatar.png" alt="Driver Avatar">
+            </div>
+        </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <div class="page stack signature-page-content">
+        <div class="stack">
+            <h1 class="heading-lg">Final Confirmation</h1>
+            <p class="helper-text">Capture recipient information to close the current dispatch ticket.</p>
+        </div>
+
+        <div class="stack">
+            <label class="label">CUSTOMER NAME</label>
+            <input type="text" class="customer-name" placeholder="Enter recipient's full name">
+        </div>
+
+        <div class="stack">
+            <div class="row signature-clear-row">
+                <div class="stack">
+                    <span class="label">Please sign below to confirm receipt</span>
+                    <span class="helper-text">LEGAL VERIFICATION REQUIRED</span>
+                </div>
+                <button type="button" class="button outlined signature-clear-btn clear-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                    </svg>
+                    Clear
+                </button>
+            </div>
+
+            <div class="card stack signature-canvas-wrapper canvas-wrapper">
+                <canvas class="signature-pad" data-has-signature="false"></canvas>
+                <span class="helper-text signature-placeholder canvas-placeholder">X &mdash; SIGN HERE</span>
+            </div>
+        </div>
+
+        <div class="grid compact signature-info-grid">
+            <div class="card stack signature-info-card">
+                <span class="label">GEOLOCATION</span>
+                <p class="helper-text data-geolocation">
+                    <strong>40.7128&deg; N,<br>74.0060&deg; W</strong>
+                </p>
+            </div>
+            <div class="card stack signature-info-card">
+                <span class="label">TIMESTAMP</span>
+                <p class="helper-text">
+                    <strong class="current-timestamp">OCT 24, 2025 -<br>14:42</strong>
+                </p>
+            </div>
+        </div>
+
+        <div class="row signature-status-row">
+            <span class="chip success signature-status-dot">Lock</span>
+            <span class="helper-text signature-status-text">Secure GPS satellite lock established</span>
+        </div>
+
+        <div class="stack signature-footer">
+            <button class="button primary signature-confirm-btn confirm-btn" disabled>
+                Confirm Delivery
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+            </button>
+            <p class="helper-text signature-disclaimer">
+                BY TAPPING CONFIRM, YOU VERIFY THAT THE GOODS WERE RECEIVED IN GOOD CONDITION BY THE SIGNATORY ABOVE.
+            </p>
+        </div>
+    </div>
+</section>

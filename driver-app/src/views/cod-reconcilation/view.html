@@ -1,0 +1,97 @@
+<section class="cod-reconciliation-view stack">
+
+    <!--PAGE HEADING-->
+    <header class="stack stack-compact">
+      <h1 class="heading-lg">COD Reconciliation</h1>
+      <p class="helper-text">Session: <span class="text-title">date</span> | Route ID: <span class="text-title">route-id</span></p>
+    </header>
+
+    <!--MONEY CARDS-->
+    <div class="grid compact summary-grid">
+      <div class="card stack stack-compact">
+        <span class="label m-0">Total Expected</span>
+        <strong class="heading-md stat-value">amount value</strong>
+        <span class="helper-text m-0">num of deliveries</span>
+      </div>
+
+      <div class="card stack stack-compact">
+        <span class="label m-0">Total Collected</span>
+        <strong class="heading-md stat-value">amount value</strong>
+        <span class="helper-text m-0">num of validated deliveries</span>
+      </div>
+    </div>
+
+    <!-- DISCREPANCY CARD-->
+    <div class="card stack discrepancy-card palette-danger">
+      <span class="label m-0">DISCREPANCY</span>
+      <strong class="heading-xl stat-value">amount value of discrepancy</strong>
+      <div class="row m-0">
+        <span class="helper-text warning-text">⚠ Requires Manual Review</span>
+      </div>
+    </div>
+
+    <!-- ORDERS TABLE-->
+    <div class="card stack orders-table">
+      <!-- Table header -->
+      <header class="row table-header">
+        <span class="label m-0 col-id">Order ID</span>
+        <span class="label m-0 col-name">Customer</span>
+        <span class="label m-0 col-amt text-right">Expected</span>
+      </header>
+
+      <div class="stack table-body">
+        <div class="row table-row">
+          <span class="helper-text col-id order-id">ORD-8821</span>
+          <span class="helper-text col-name">Apex Industrial Supply</span>
+          <span class="helper-text col-amt text-right">amount value</span>
+        </div>
+
+        <div class="row table-row">
+          <span class="helper-text col-id order-id">ORD-8845</span>
+          <span class="helper-text col-name">Miller Area Logistics</span>
+          <span class="helper-text col-amt text-right">amount value</span>
+        </div>
+
+        <div class="row table-row">
+          <span class="helper-text col-id order-id">ORD-8902</span>
+          <span class="helper-text col-name">Hamilton Foundries</span>
+          <span class="helper-text col-amt text-right">amount value</span>
+        </div>
+
+        <div class="row table-row table-row--last">
+          <span class="helper-text col-id order-id">ORD-8914</span>
+          <span class="helper-text col-name">River City Works</span>
+          <span class="helper-text col-amt text-right">amount value</span>
+        </div>
+      </div>
+    </div>
+
+    <!--DISCREPANCY ALERT -->
+    <div class="card row alert-card">
+      <span class="alert-dot"></span>
+      <div class="stack alert-body">
+        <strong class="label text-danger alert-title">Critical Discrepancy Detected</strong>
+        <p class="helper-text m-0">
+          Order #ORD-8845 shows no collection entry. Driver notes indicate
+          "Customer Absent – No attempt Scheduled". Please verify physical
+          cash in pouch or upload transaction screenshot to clear discrepancy.
+        </p>
+        <div class="stack note-container"></div>
+        <div class="row button-group mt-2">
+          <button class="button secondary btn-sm add-note-btn">Add Driver Note</button>
+          <button class="button secondary btn-sm upload-proof-btn">Upload Proof</button>
+          <input type="file" class="proof-upload-input" style="display: none;" accept="image/*,.pdf">
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT BUTTON -->
+    <button class="button primary submit-btn">
+      Submit for Reconciliation
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/>
+        <polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+
+</section>

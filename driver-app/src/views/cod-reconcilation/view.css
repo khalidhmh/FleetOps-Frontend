@@ -1,0 +1,113 @@
+/* cod-reconciliation/view.css */
+
+.cod-reconciliation-view {
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+.cod-reconciliation-view .page {
+  padding: 20px 16px;
+}
+
+/* Summary Grid specific gap */
+.cod-reconciliation-view .summary-grid {
+  gap: 12px;
+}
+
+/* Discrepancy Card Overrides */
+.cod-reconciliation-view .discrepancy-card {
+  background: var(--color-danger) !important;
+  border-color: var(--color-danger-hover) !important;
+  padding: 16px 20px;
+}
+
+.cod-reconciliation-view .discrepancy-card .label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cod-reconciliation-view .discrepancy-card .stat-value {
+  color: var(--color-white);
+}
+
+.cod-reconciliation-view .discrepancy-card .warning-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Orders Table Unique Logic */
+.cod-reconciliation-view .orders-table {
+  gap: 0 !important;
+}
+
+.cod-reconciliation-view .table-header {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 10px;
+}
+
+.cod-reconciliation-view .table-row {
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 0;
+  gap: 8px;
+}
+
+.cod-reconciliation-view .table-row--last {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.cod-reconciliation-view .col-id { flex: 1; }
+.cod-reconciliation-view .col-name { flex: 2; }
+.cod-reconciliation-view .col-amt { flex: 1; }
+
+.cod-reconciliation-view .order-id {
+  color: var(--color-text-title);
+  font-weight: 600;
+}
+
+/* Alert Card Unique Logic */
+.cod-reconciliation-view .alert-card {
+  border-left: 4px solid var(--color-danger);
+  background: var(--color-surface-highest);
+  align-items: flex-start;
+}
+
+.cod-reconciliation-view .alert-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-danger);
+  margin-top: 6px;
+}
+
+.cod-reconciliation-view .alert-body {
+  gap: 8px;
+}
+
+/* Utility Overrides for this view */
+.cod-reconciliation-view .text-right { text-align: right; }
+.cod-reconciliation-view .text-title { color: var(--color-text-title); font-weight: 600; }
+.cod-reconciliation-view .text-success { color: var(--color-chip-success-text); }
+.cod-reconciliation-view .m-0 { margin: 0; }
+.cod-reconciliation-view .mt-1 { margin-top: 4px; }
+.cod-reconciliation-view .mt-2 { margin-top: 8px; }
+.cod-reconciliation-view .w-full { width: 100%; }
+.cod-reconciliation-view .btn-sm { min-height: 36px; padding: 6px 12px; font-size: var(--font-size-xs); }
+
+.cod-reconciliation-view .issue-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-body);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  resize: vertical;
+}
+
+/* Submit button specific shadow */
+.cod-reconciliation-view .submit-btn {
+  width: 100%;
+  margin-top: 8px;
+  box-shadow: var(--shadow-md);
+}

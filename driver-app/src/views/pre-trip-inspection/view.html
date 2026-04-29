@@ -1,0 +1,282 @@
+<section class="stack Pre-Trip-view">
+  
+  <!-- SUCCESS BANNER-->
+  <div class="banner hidden" aria-live="polite">
+    <div class="banner-content">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toast-icon">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <span>Inspection submitted successfully!</span>
+    </div>
+  </div>
+
+  <!--OWNER-->
+  <div class="owner palette-secondary">
+    <div class="owner-meta">
+      <div class="stack">
+        <div class="owner heading-lg">Pre-Trip Inspection</div>
+        <div class="owner-sub">
+            <div>
+                <div class="label">VEHICLE PLATE</div>
+                <div class="vehicle-plate-value"></div>
+            </div>
+            <div>
+                <div class="label">MODEL</div>
+                <div class="vehicle-model-value"></div>
+            </div>
+            <div>
+                <div class="label">TODAY'S DATE</div>
+                <div class="today-date">restored date</div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-row stack">
+        <div class="progress-text"><span>0</span> of 16</div>
+        <div class="helper-text">item checked</div>
+        <div class="progress-container"><progress class="progress-bar" value="0" max="100"> 0% </progress></div>
+        <div class="warning-banner"><i></i>Safety check required before ignition</div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST FORM-->
+  <form class="scroll-area inspection-form">
+
+    <fieldset class="section">
+      <div class="section-header">
+        <legend class="section-title">Tires</legend>
+      </div>
+      <div class="check-list stack">
+
+        <label class="check-item">
+          <input type="checkbox" name="tire_pressure" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Pressure & Tread Depth</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="wheel_nut" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Wheel Nut Security</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="sidewall" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Sidewall Condition</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="spare_tire" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/>
+            </svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Spare Tire</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="section">
+      <div class="section-header">
+        <legend class="section-title">Brakes</legend>
+      </div>
+      <div class="check-list stack">
+
+        <label class="check-item">
+          <input type="checkbox" name="service_brake" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Service Brake Test</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="parking_brake" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Parking Brake Engagement</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="air_leakage" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Air Leakage Check</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+      </div>
+    </fieldset>
+
+    <fieldset class="section">
+      <div class="section-header">
+        <legend class="section-title">Lights</legend>
+      </div>
+      <div class="check-list stack">
+
+        <label class="check-item">
+          <input type="checkbox" name="headlights" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Headlights & Indicators</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="tail_lights" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Brake & Tail Lights</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="reflectors" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Reflectors & Markers</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+      </div>
+    </fieldset>
+
+    <fieldset class="section">
+      <div class="section-header">
+        <legend class="section-title">Documents</legend>
+      </div>
+      <div class="check-list stack">
+
+        <label class="check-item">
+          <input type="checkbox" name="insurance" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Insurance Verification</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="registration" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Registration Receipt</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="route_manifest" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Route Manifest</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+      </div>
+    </fieldset>
+
+    <!--CABIN-->
+    <fieldset class="section">
+      <div class="section-header">
+        <legend class="section-title">Cabin</legend>
+      </div>
+      <div class="check-list stack">
+
+        <label class="check-item">
+          <input type="checkbox" name="mirrors" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Mirror Adjustments</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="wipers" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Wipers & Fluid</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+        <label class="check-item">
+          <input type="checkbox" name="emergency_kit" />
+          <span class="check-box">
+            <svg viewBox="0 0 13 13" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 5 9.5 11 3.5"/></svg>
+          </span>
+          <span class="item-content">
+            <span class="item-label">Emergency Kit Check</span>
+          </span>
+          <span class="item-right"></span>
+        </label>
+
+      </div>
+    </fieldset>
+
+  </form>
+
+  <div class="bottom-bar">
+    <button type="submit" form="inspectionForm" class="submit-btn inspection-button" disabled aria-label="Start Route">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check">
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+      Start Route
+    </button>
+  </div>
+  
+  </section>

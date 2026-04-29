@@ -1,0 +1,169 @@
+/* ===================== */
+/*    LOGIN VIEW STYLES  */
+/* ===================== */
+
+/* ── Error Notification ── */
+.error-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background-color: #fee2e2; /* Light red */
+    color: var(--color-danger);
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+/* ── Layout & Content ── */
+.login-view {
+    min-height: 100vh;
+    background: var(--color-surface-low);
+}
+
+.login-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 36px 20px 40px;
+}
+
+.login-content .card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* ── Brand ── */
+.brand {
+  gap: 16px;
+}
+
+.brand-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.brand-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.brand-text h1 {
+  font-family: var(--font-family-display);
+  font-size: clamp(28px, 6vw, 36px);
+  font-weight: 700;
+  color: var(--color-text-title);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1;
+}
+
+.brand-line {
+  width: 32px;
+  height: 3px;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+/* ── Form Fields ── */
+.login-form {
+  gap: 24px;
+}
+
+.form-field {
+  gap: 6px;
+}
+
+/* ── Underline inputs ── */
+.form-field input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--color-border);
+  border-radius: 0;
+  padding: 8px 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-title);
+  min-height: 40px;
+  transition: border-color 0.2s ease;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-bottom-color: var(--color-primary-dim);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  padding-right: 36px;
+}
+
+.input-icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--color-outline);
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* ── Sign-in button ── */
+.sign-in-btn {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 24px;
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  margin-top: 8px;
+}
+
+.sign-in-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.sign-in-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}

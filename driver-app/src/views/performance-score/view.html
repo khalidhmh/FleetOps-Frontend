@@ -1,0 +1,83 @@
+<section class="stack performance-score-view">
+    <header class="ps-header">
+        <div class="ps-logo-row">
+            <img src="/assets/logo.svg" alt="FleetOps" class="ps-logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden')" />
+            <span class="ps-logo-text hidden">FleetOps</span>
+            <img src="/assets/icon-bell.svg" alt="Alerts" class="ps-header-icon" onerror="this.style.opacity='0'" />
+        </div>
+    </header>
+
+    <div class="ps-content">
+        <!-- SCORE HEADER -->
+        <div class="ps-index-container">
+            <p class="ps-index-label">PERFORMANCE INDEX</p>
+            <div class="ps-index-score">
+                <span class="ps-score-big ps-main-score">87</span>
+                <span class="ps-score-small">/100</span>
+            </div>
+            <p class="ps-index-desc">Exceeding fleet average by <strong class="ps-fleet-diff">12%</strong> this month.</p>
+        </div>
+
+        <!-- CIRCULAR RANK -->
+        <div class="ps-rank-container">
+            <div class="ps-rank-circle">
+                <div class="ps-rank-circle-inner">
+                    <span class="ps-rank-number ps-rank-val">#4</span>
+                </div>
+            </div>
+            <h2 class="ps-rank-tier ps-tier-name">Elite Driver Tier</h2>
+            <p class="ps-rank-subtext driver-rank-display"></p>
+        </div>
+
+        <!-- METRICS GRID -->
+        <div class="ps-metrics-grid">
+            <div class="ps-metric-card card">
+                <div class="ps-metric-title">
+                    <img src="/assets/icon-delivery.svg" alt="Speed" class="ps-icon" onerror="this.style.display='none'" />
+                    <span>DELIVERY SPEED</span>
+                </div>
+                <div class="ps-metric-val ps-metric-speed">94%</div>
+            </div>
+            <div class="ps-metric-card card">
+                <div class="ps-metric-title">
+                    <img src="/assets/icon-fuel.svg" alt="Fuel" class="ps-icon" onerror="this.style.display='none'" />
+                    <span>FUEL EFFICIENCY</span>
+                </div>
+                <div class="ps-metric-val ps-metric-fuel">82%</div>
+            </div>
+            <div class="ps-metric-card card">
+                <div class="ps-metric-title">
+                    <img src="/assets/icon-star.svg" alt="Rating" class="ps-icon" onerror="this.style.display='none'" />
+                    <span>CUST. RATING</span>
+                </div>
+                <div class="ps-metric-val ps-rating-highlight ps-metric-rating">
+                    <span class="ps-star-icon">★</span> 4.9
+                </div>
+            </div>
+            <div class="ps-metric-card card">
+                <div class="ps-metric-title">
+                    <img src="/assets/icon-clock.svg" alt="On Time" class="ps-icon" onerror="this.style.display='none'" />
+                    <span>ON-TIME RATE</span>
+                </div>
+                <div class="ps-metric-val ps-metric-ontime">98.2%</div>
+            </div>
+        </div>
+
+        <!-- RECENT COMMENTS -->
+        <div class="ps-comments-section">
+            <div class="ps-comments-header">
+                <h3>Recent Comments</h3>
+            </div>
+            <div class="ps-comments-list ps-comments-container">
+            </div>
+        </div>
+
+        <!-- DOWNLOAD BUTTON -->
+        <div class="ps-download-section">
+            <button type="button" class="button primary ps-download-btn ps-btn-download">
+                <img src="/assets/icon-download.svg" alt="Download" class="ps-btn-icon" onerror="this.style.display='none'" />
+                DOWNLOAD FULL ANALYSIS
+            </button>
+        </div>
+    </div>
+</section>

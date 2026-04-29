@@ -17,7 +17,7 @@ import {
   fetchNotifications,
   markAsRead,
   markAllAsRead,
-} from '../api/notification.js';
+} from '../services/api/notification.js';
 
 // ─────────────────────────────────────────────────────────────────
 // CONSTANTS — single IDs so we never inject twice
@@ -394,7 +394,7 @@ function injectPanel() {
 /**
  * Renders the notification list items into #notif-list.
  *
- * @param {import('../api/notification.js').Notification[]} notifications
+ * @param {import('..services/api/notification.js').Notification[]} notifications
  */
 function renderList(notifications) {
   const list = document.getElementById(LIST_ID);

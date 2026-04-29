@@ -1,0 +1,133 @@
+/* active-route/view.css */
+
+.active-route-view {
+  background: var(--color-surface-low);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* Custom spacing for the stats grid in this view */
+.active-route-view .stats-grid {
+  padding: 0 16px;
+  margin-top: 8px;
+}
+
+.active-route-view .stat-card {
+  padding: 16px;
+}
+
+/* Timeline Logic - This is unique to this view */
+.active-route-view .stops-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px 32px;
+  position: relative;
+}
+
+.active-route-view .timeline-line {
+  position: absolute;
+  top: 48px;
+  bottom: 60px;
+  left: 20px;
+  width: 2px;
+  background: var(--color-surface-strong);
+  z-index: 0;
+}
+
+.active-route-view .timeline-progress-line {
+  position: absolute;
+  top: 48px;
+  left: 20px;
+  width: 2px;
+  height: 0;
+  background: var(--color-primary);
+  z-index: 1;
+  transition: height 0.5s ease;
+}
+
+/* Timeline dots for cards */
+.active-route-view .active-stop-card,
+.active-route-view .pending-stop-card {
+  position: relative;
+  margin-left: 24px;
+}
+
+.active-route-view .active-stop-card::before,
+.active-route-view .pending-stop-card::before {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 24px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface-low);
+  z-index: 2;
+  transition: all 0.4s ease;
+}
+
+.active-route-view .active-stop-card::before {
+  background: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.active-route-view .pending-stop-card::before {
+  background: var(--color-surface-strong);
+  box-shadow: 0 0 0 2px var(--color-surface-strong);
+}
+
+.active-route-view .active-stop-card {
+  border-left: 4px solid var(--color-primary);
+}
+
+/* Specialized Badge Color */
+.active-route-view .active-stop-badge span {
+  color: var(--color-primary-dim);
+}
+
+/* Progress bar specifics */
+.active-route-view .route-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-surface-strong);
+  margin-top: 16px;
+}
+
+.active-route-view .route-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 0.4s ease;
+}
+
+/* Pending card state */
+.active-route-view .pending-stop-card {
+  opacity: 0.6;
+  background: transparent;
+}
+
+.active-route-view .pending-stop-card.active-state {
+  opacity: 1;
+  background: var(--color-surface);
+  border-left: 4px solid var(--color-primary);
+}
+
+.active-route-view .pending-stop-card.active-state::before {
+  background: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+/* Utility Overrides for this view */
+.active-route-view .text-primary { color: var(--color-primary-dim); }
+.active-route-view .items-baseline { align-items: baseline; }
+.active-route-view .items-end { align-items: flex-end; }
+.active-route-view .m-0 { margin: 0; }
+.active-route-view .row-compact { gap: 6px; }
+
+/* Completed state for arrived button */
+.active-route-view .route-action-btn.completed {
+    background: var(--color-surface-strong);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    opacity: 0.8;
+}

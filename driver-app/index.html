@@ -8,35 +8,69 @@
         <link rel="stylesheet" href="./src/styles/main.css" />
     </head>
     <body>
-        <nav class="navbar" aria-label="Main navigation">
-            <div class="navbar__brand">Driver App</div>
-            <div class="navbar__links">
-                <a class="navbar__link" href="/" data-link data-route="/"
-                    >Main Page</a
-                >
-                <a
-                    class="navbar__link"
-                    href="/page-one"
-                    data-link
-                    data-route="/page-one"
-                    >Page One</a
-                >
-                <a
-                    class="navbar__link"
-                    href="/preview-page"
-                    data-link
-                    data-route="/preview-page"
-                    >Template Page</a
-                >
-            </div>
-        </nav>
+        <header class="top-bar">
+            <i class="top-bar-avatar"><img src="/assets/Avatar.png" alt="driver-avatar"></i>
+            <h1 class="top-bar-title">FleetOps</h1>
+            <i class="top-bar-status-icon"></i>
+        </header>
 
         <main id="app-content" class="app-content" aria-live="polite"></main>
 
-        <footer class="footer">
-            <p>&copy; 2024 Fleet Tracking Platform. All rights reserved.</p>
-        </footer>
-
+        <bottom-nav class="bottom-nav" aria-label="Main navigation">
+        
+            <div class="nav-item" data-tab="route">
+                <i class="nav-icon nav-icon--route">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-route-icon lucide-route">
+                        <circle cx="6" cy="19" r="3" />
+                        <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+                        <circle cx="18" cy="5" r="3" />
+                    </svg>
+                </i>
+                <span class="nav-label">Route</span>
+            </div>
+        
+            <div class="nav-item" data-tab="alerts">
+                <i class="nav-icon nav-icon--alerts">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-icon lucide-bell">
+                        <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+                        <path
+                            d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+                    </svg>
+                </i>
+                <span class="nav-label">Alerts</span>
+            </div>
+        
+            <div class="nav-item" data-tab="stats">
+                <i class="nav-icon nav-icon--stats">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-stats-icon lucide-stats">
+                        <path d="M12 20V10" />
+                        <path d="M18 20V4" />
+                        <path d="M6 20v-4" />
+                    </svg>
+                </i>
+                <span class="nav-label">Stats</span>
+            </div>
+        
+            <div class="nav-item" data-tab="profile">
+                <i class="nav-icon nav-icon--profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-profile-icon lucide-profile">
+                        <circle cx="12" cy="8" r="5" />
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    </svg>
+                </i>
+                <span class="nav-label">Profile</span>
+            </div>
+        
+        </bottom-nav>
+        
         <script type="module" src="./src/main.js"></script>
-    </body>
-</html>
+        </body>
+        
+        </html>

@@ -1,0 +1,100 @@
+<section class="incident-report-view">
+
+    <!--TOP BAR-->
+    <div class="top-bar">
+        <div class="top-bar-avatar">
+            <img src="../../../assets/Avatar.png" alt="driver-avatar">
+        </div>
+        <h2 class="top-bar-title">FleetOps</h2>
+        <i class="top-bar-status-icon"></i>
+    </div>
+
+    <div class="stack main-stack">
+
+        <div class="stack">
+            <h1 class="heading-xl page-title">INCIDENT REPORTING</h1>
+            <p class="helper-text page-subtitle">Log field issues immediately for dispatcher review.</p>
+        </div>
+
+        <div class="card stack content-card">
+            <!--MAP-->
+            <div class="stack map-sec">
+                <div class="row map-header">
+                    <div class="row map-title-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span class="label map-label">CURRENT GPS LOCATION</span>
+                    </div>
+                    <span class="chip success auto-chip">AUTO-CAPTURED</span>
+                </div>
+
+                <div class="map-preview">
+                    <div class="map-pin"></div>
+                    <div class="map-pulse"></div>
+                </div>
+
+                <div class="stack coordinates-stack">
+                    <span class="helper-text coordinates-label">COORDINATES</span>
+                    <span class="heading-md coordinates-value">37.7740° N, 122.4194° W</span>
+                </div>
+            </div>
+
+            <div class="stack form-stack">
+                <div class="stack">
+                    <label class="label form-label">INCIDENT CATEGORY</label>
+                    <select class="select incident-category">
+                        <option value="breakdown" selected>Breakdown</option>
+                        <option value="accident">Accident</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="evidence-capture evidence-capture-box">
+                    <input type="file">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                        class="evidence-icon">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                        </path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    <span class="heading-md evidence-title">EVIDENCE CAPTURE</span>
+                    <span class="helper-text evidence-subtitle">Attach up to 3 photos</span>
+                    <span class="upload-link">UPLOAD FILE</span>
+                </div>
+
+                <div class="stack">
+                    <label class="label form-label">DETAILS & OBSERVATIONS</label>
+                    <textarea class="textarea incident-details"
+                        placeholder="Describe the situation with industrial precision..."></textarea>
+                </div>
+
+                <div class="row warning-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="ir-warning-icon">
+                        <path
+                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                        </path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <span class="helper-text ir-warning-text">IMMEDIATE ACTION: DISPATCHER WILL BE NOTIFIED IMMEDIATELY.
+                        FALSE REPORTS ARE SUBJECT TO OPERATIONAL REVIEW.</span>
+                </div>
+
+                <button class="button primary submit-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    SUBMIT INCIDENT REPORT
+                </button>
+            </div>
+        </div>
+    </div>
+
+</section>

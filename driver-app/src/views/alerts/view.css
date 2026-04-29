@@ -1,0 +1,40 @@
+.alerts-page {
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+.alerts-grid {
+    grid-template-columns: 1fr;
+}
+
+.alert-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.alert-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    background: var(--color-surface-highest);
+}
+
+.alert-card .icon {
+    width: 52px;
+    height: 52px;
+    background: var(--color-secondary);
+    color: var(--color-primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.alert-card .card-content {
+    display: flex;
+    flex-direction: column;
+}
+

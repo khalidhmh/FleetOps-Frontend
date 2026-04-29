@@ -216,9 +216,10 @@
                         <button
                             class="topbar-icon-btn topbar-notification-btn"
                             type="button"
-                            aria-label="Notifications">
+                            aria-label="Notifications"
+                            onclick="import('./src/utils/notification-ui.js').then(module => module.showNotificationPanel()).catch(err => console.error('Error loading panel:', err))">
                             <i data-lucide="bell"></i>
-                            <span class="topbar-notification-badge">4</span>
+                            <span class="topbar-notification-badge" id="notif-badge">4</span>
                         </button>
                         <div class="topbar-user">
                             <div class="topbar-user__avatar">JM</div>

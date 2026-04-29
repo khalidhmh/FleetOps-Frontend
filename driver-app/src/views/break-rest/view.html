@@ -1,0 +1,72 @@
+<section class="break-rest-view">
+
+    <!--TOP BAR-->
+    <div class="top-bar">
+        <div class="top-bar-avatar">
+            <img src="../../../assets/Avatar.png" alt="driver-avatar">
+        </div>
+        <h2 class="top-bar-title">FleetOps</h2>
+        <i class="top-bar-status-icon"></i>
+    </div>
+    <!-- TOP CHIP -->
+    <div class="status-banner">
+        <span class="chip success">
+            YOU CAN CONTINUE DRIVING
+        </span>
+    </div>
+
+    <!--DURATION CARD -->
+    <div class="card text-center">
+        <p class="label text-muted">DRIVING TIME</p>
+        <h1 class="time-display main-time-display">4h 20m</h1>
+        <h1 class="time-display timer-display"></h1>
+        <p class="helper-text goal-text">Goal: 6h 00m</p>
+    </div>
+
+    <!--REST CARD-->
+    <div class="card dark-card flex-between">
+        <div class="rest-info">
+            <p class="label text-muted">REST TIME TAKEN TODAY</p>
+            <h2 class="rest-time">35 min</h2>
+        </div>
+        <div class="icon-wrapper">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <!-- COMPLIANCE CARD -->
+    <div class="card dark-card compliance-card">
+        <div class="compliance-header">
+            <svg class="icon warning-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                </path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <h3 class="compliance-title">Compliance Status</h3>
+        </div>
+        <p class="compliance-text">
+            Your next mandatory 45-minute break is required in 1h 40m to remain within legal limits.
+        </p>
+    </div>
+
+    <!-- START BREAK BUTTON -->
+    <div class="action-container">
+        <button class="button primary w-100 start-break-btn">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            START BREAK
+        </button>
+        <p class="compliance-note">
+            Compliance Note: Data synchronized with FleetOps ELD System. This information is intended as a guide. Ensure
+            manual logbook accuracy during cross-border operations.
+        </p>
+    </div>
+</section>

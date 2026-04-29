@@ -1,0 +1,143 @@
+<section class="stack failed-delivery-view">
+
+        <!--FAILED CHIP-->
+        <div>
+            <span class="chip danger"><span><i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-triangle-alert-icon lucide-triangle-alert">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+                            <path d="M12 9v4" />
+                            <path d="M12 17h.01" />
+                        </svg></i></span> Delivery Failed</span>
+        </div>
+
+        <!-- PAGE HEADING -->
+        <div class="stack">
+            <h1 class="heading-lg">Package Exception</h1>
+            <p class="helper-text">Order ID: #FL-294-8830 | RTB Protocol Triggered</p>
+        </div>
+
+        <!-- REASON SELECTION -->
+        <div class="stack">
+            <span class="label">Select Reason</span>
+
+            <div class="card stack">
+
+                <label class="row reason-option">
+                    <span class="row">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-user-round-icon lucide-user-round">
+                                <circle cx="12" cy="8" r="5" />
+                                <path d="M20 21a8 8 0 0 0-16 0" />
+                            </svg>
+                        </span>
+                        <span class="label">Customer not present</span>
+                    </span>
+                    <input type="radio" name="reason" value="customer-not-present" />
+                </label>
+
+                <label class="row reason-option">
+                    <span class="row">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="lucide lucide-map-pin-xinside-icon lucide-map-pin-x-inside">
+                                <path
+                                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                                <path d="m14.5 7.5-5 5" />
+                                <path d="m9.5 7.5 5 5" />
+                            </svg>
+                        </span>
+                        <span class="label">Wrong address</span>
+                    </span>
+                    <input type="radio" name="reason" value="wrong-address" />
+                </label>
+
+                <label class="row reason-option">
+                    <span class="row">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-ban-icon lucide-ban">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M4.929 4.929 19.07 19.071" />
+                            </svg>
+                        </span>
+                        <span class="label">Refused</span>
+                    </span>
+                    <input type="radio" name="reason" value="refused" />
+                </label>
+
+                <label class="row reason-option">
+                    <span class="row">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole">
+                                <circle cx="12" cy="16" r="1" />
+                                <rect x="3" y="10" width="18" height="12" rx="2" />
+                                <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+                            </svg>
+                        </span>
+                        <span class="label">Access denied</span>
+                    </span>
+                    <input type="radio" name="reason" value="access-denied" />
+                </label>
+
+                <label class="row reason-option">
+                    <span class="row">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole">
+                                <circle cx="12" cy="16" r="1" />
+                                <rect x="3" y="10" width="18" height="12" rx="2" />
+                                <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+                            </svg>
+                        </span>
+                        <span class="label">Damaged</span>
+                    </span>
+                    <input type="radio" name="reason" value="damaged" />
+                </label>
+
+            </div>
+        </div>
+
+        <!-- ADDITIONAL NOTES -->
+        <div class="stack">
+            <span class="label">Additional Notes</span>
+            <div class="card">
+                <textarea placeholder="Enter specific details regarding the failure..."></textarea>
+                <p class="helper-text">Optional</p>
+            </div>
+        </div>
+
+        <!-- RETURN DESTINATION -->
+        <div class="card row">
+            <div class="nav-icon" style="width:48px; height:48px; flex-shrink:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-primary-dim)">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                </svg>
+            </div>
+            <div class="stack">
+                <span class="label">Return Destination</span>
+                <strong class="heading-md">Logistics Hub East – Bay 4</strong>
+                <p class="helper-text">12.4 miles from current location</p>
+            </div>
+        </div>
+
+        <!-- CONFIRM BUTTON -->
+        <button class="button confirm-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Confirm Failure & Return Parcel
+        </button>
+</section>

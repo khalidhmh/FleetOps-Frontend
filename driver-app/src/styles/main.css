@@ -175,7 +175,7 @@ h6 {
 }
 
 .button.primary {
-    background: var(--color-primary-dim);
+    background: var(--color-primary);
     color: var(--color-cta-text);
 }
 
@@ -447,49 +447,7 @@ select:focus {
     color: var(--color-palette-neutral-text);
 }
 
-.navbar {
-    background: var(--color-navbar-bg);
-    color: var(--color-cta-text);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-}
 
-.navbar__brand {
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.navbar__links {
-    display: flex;
-    gap: 10px;
-}
-
-.navbar__link {
-    color: var(--color-cta-text);
-    text-decoration: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
-}
-
-.navbar__link:hover {
-    background-color: var(--color-navbar-link-hover);
-}
-
-.navbar__link.is-active {
-    background-color: var(--color-secondary-container);
-    color: var(--color-on-secondary-container);
-}
-
-.footer {
-    background: var(--color-navbar-bg);
-    color: var(--color-cta-text);
-    text-align: center;
-    padding: 20px;
-    margin-top: 50px;
-}
 
 @media (max-width: 680px) {
     .button {
@@ -507,15 +465,196 @@ select:focus {
 }
 
 .app-content {
-    max-width: 980px;
-    margin: 24px auto;
+    max-width: 600px;
     padding: 0 16px;
+    width: 100%;
+    background: var(--color-surface-low);
+    flex: 1;
 }
 
 .page {
+    flex: 1;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: 24px;
     box-shadow: var(--shadow-sm);
+}
+
+
+/* ===================== */
+/*       TOP BAR         */
+/* ===================== */
+
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--color-surface-low);
+  border-bottom: 1px solid var(--color-border);
+  min-height: 72px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  gap: 16px;
+}
+
+/* ── Avatar (left) ──────────────── */
+/* Rounded square mimicking the
+   driver profile photo in the UI  */
+.top-bar-avatar {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  font-style: normal;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Title (center-left) ─────────── */
+/* Bold display font, dark title
+   colour, grows to fill space      */
+.top-bar-title {
+  flex: 1;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-title);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0;
+}
+
+/* ── Offline / Status icon (right) ─ */
+/* Cloud-off icon tinted primary-dim;
+   uses a CSS mask so colour is fully
+   token-driven                      */
+.top-bar-status-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  font-style: normal;
+  background-color: var(--color-primary);
+
+  /* cloud-off SVG mask */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z'/%3E%3Cline x1='1' y1='1' x2='23' y2='23'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z'/%3E%3Cline x1='1' y1='1' x2='23' y2='23'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.top-bar-avatar {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden; /* عشان الصورة متبقاش بره الحواف الدائرية */
+    background-color: #f0f0f0; /* خلفية مؤقتة عشان تعرف لو المكان محجوز */
+}
+
+.top-bar-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* عشان الصورة تملا المربع من غير ما تتمط */
+    display: block;
+}
+
+/* ===================== */
+/*     BOTTOM NAV        */
+/* ===================== */
+
+/* ── Bar shell ──────────────────── */
+/* Light background, full width,
+   items spread evenly across bar   */
+.bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 520px;
+  background: var(--color-surface-low);
+  border-top: 1px solid var(--color-border);
+  padding: 12px 8px 16px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+/* ── Nav item (default) ─────────── */
+/* Column layout: icon above label,
+   muted colour when not active     */
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item:hover {
+  background: var(--color-secondary-container);
+}
+
+
+
+/* ── Icons ───────────────────────── */
+/* Icon sizing only — SVG injected
+   directly in the HTML by the dev  */
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-style: normal;
+  flex-shrink: 0;
+  color: var(--color-outline);
+  transition: color 0.2s ease;
+}
+
+/* ── Labels ─────────────────────── */
+/* Small uppercase, muted by default */
+.nav-label {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+/* ── Active State ───────────────── */
+.nav-item.active {
+  background: var(--color-primary-hover);
+}
+
+.nav-item.active .nav-icon,
+.nav-item.active .nav-label {
+  color: var(--color-secondary);
+  fill: var(--color-primary); /* For icons that might use fill */
+}
+
+.nav-item.active svg {
+  stroke: var(--color-secondary);
 }

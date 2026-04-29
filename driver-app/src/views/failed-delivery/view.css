@@ -1,0 +1,217 @@
+/* ── Page wrapper ── */
+.package-exception-page {
+    padding-bottom: 40px;
+}
+
+.package-exception-page .page {
+    gap: 20px;
+    padding: 20px 16px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+/* ── Delivery Failed chip ── */
+.chip.danger {
+  background: var(--color-danger);
+  color: var(--color-white);
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.08em;
+}
+
+/* ── Page heading ── */
+.package-exception-page .heading-lg {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-text-title);
+    letter-spacing: -0.01em;
+}
+
+.package-exception-page .page > .stack:nth-child(2) .helper-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+/* ── Section label ── */
+.package-exception-page > .page > .stack > .label {
+    font-size: var(--font-size-xs);
+  font-weight: 700;
+    letter-spacing: 0.1em;
+  text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+}
+
+/* ── Reasons card ── */
+.package-exception-page .card.stack {
+    gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── Reason option row ── */
+.reason-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+    transition: background 0.15s ease;
+    gap: 0;
+}
+
+.reason-option:last-child {
+  border-bottom: none;
+}
+
+.reason-option:hover {
+  background: var(--color-surface-highest);
+}
+
+.reason-option .row {
+    gap: 10px;
+    flex-wrap: nowrap;
+    flex: 1;
+}
+
+.reason-option .nav-icon {
+  color: var(--color-outline);
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.reason-option .label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-title);
+    margin: 0;
+}
+
+/* ── Radio button ── */
+.reason-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+    min-height: unset;
+  border: 2px solid var(--color-outline);
+    border-radius: 999px;
+    background: transparent;
+    flex-shrink: 0;
+  cursor: pointer;
+    padding: 0;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.reason-option input[type="radio"]:checked {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  box-shadow: inset 0 0 0 3px var(--color-white);
+}
+
+.reason-option input[type="radio"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* ── Notes card ── */
+.package-exception-page .card:has(textarea) {
+    padding: 14px 16px;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.package-exception-page textarea {
+    border: none;
+    background: transparent;
+    padding: 0;
+    min-height: 80px;
+  font-size: var(--font-size-sm);
+    color: var(--color-text-title);
+  resize: none;
+    line-height: var(--line-height);
+}
+
+.package-exception-page textarea:focus {
+  outline: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+}
+
+.package-exception-page .card:has(textarea) .helper-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0;
+}
+
+/* ── Return destination card ── */
+.package-exception-page .card.row {
+    gap: 14px;
+    padding: 16px;
+    align-items: center;
+  background: var(--color-surface-strong);
+}
+
+.package-exception-page .card.row .stack {
+    gap: 4px;
+    flex: 1;
+}
+
+.package-exception-page .card.row .label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.package-exception-page .card.row .heading-md {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--color-text-title);
+}
+
+.package-exception-page .card.row .helper-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+/* ── Confirm button ── */
+.confirm-btn {
+  width: 100%;
+  min-height: 52px;
+    background: var(--color-danger);
+    color: var(--color-white);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+    text-transform: uppercase;
+  border: none;
+    border-radius: var(--radius-sm);
+  gap: 10px;
+    box-shadow: var(--shadow-md);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.confirm-btn:hover {
+  background: var(--color-danger-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-floating);
+}
+
+.confirm-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
