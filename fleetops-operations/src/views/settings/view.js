@@ -1,5 +1,6 @@
 import { getSettings, updateSettings } from '/src/services/api/settings.js';
 import { logAuditAction } from '../../services/api/auditLogger.js';
+import { createIcons, icons } from '/node_modules/lucide/dist/esm/lucide.mjs';
 
 let root = null;
 let settingsState = null;
@@ -125,6 +126,8 @@ function renderState() {
             rolesTbody.appendChild(tr);
         });
     }
+
+    createIcons({ icons });
 }
 
 /**
@@ -222,7 +225,8 @@ function handleClick(e) {
         }
 
         const originalHtml = saveBtn.innerHTML;
-        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        saveBtn.innerHTML = '<i data-lucide="loader-circle"></i> Saving...';
+        createIcons({ icons });
         saveBtn.disabled = true;
 
         // Execute real API storage update
@@ -232,7 +236,8 @@ function handleClick(e) {
             // Log to Audit Trail
             logAuditAction("ADM-001", "Admin", "Updated", "SystemConfig", "Settings", null, settingsState);
 
-            saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved';
+            saveBtn.innerHTML = '<i data-lucide="check"></i> Saved';
+            createIcons({ icons });
             saveBtn.style.backgroundColor = 'var(--color-chip-success-text)';
 
             setTimeout(() => {
@@ -301,6 +306,7 @@ export async function mount(rootElement) {
 
     // Inject data into UI
     renderState();
+    createIcons({ icons });
 
     // Attach singular delegated listeners
     root.addEventListener('input', handleInputAndChange);

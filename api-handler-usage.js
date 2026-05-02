@@ -374,3 +374,14 @@ async function fullShoppingFlow() {
   await safeGetOrderStatus(1);
   await fullShoppingFlow();
 })();
+
+const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+};
+
+// إضافة التوكن لو موجود
+const token = localStorage.getItem('token');
+if (token && token !== "undefined") { // التأكد أن التوكن موجود فعلياً
+    headers['Authorization'] = `Bearer ${token}`;
+}

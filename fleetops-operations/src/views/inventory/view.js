@@ -1,6 +1,7 @@
 import { getInventory, updateInventory } from '../../services/api/inventory.js';
 import { getSettings } from '../../services/api/settings.js';
 import { logAuditAction } from '../../services/api/auditLogger.js';
+import { createIcons, icons } from '/node_modules/lucide/dist/esm/lucide.mjs';
 
 let root = null;
 let state = [];
@@ -152,7 +153,7 @@ const render = () => {
                     <td>${new Date(item.lastRestocked).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</td>
                     <td>
                         <button class="action-btn view-details-btn" data-id="${item.id}" title="View Details">
-                            <i class="fa-regular fa-eye"></i>
+                            <i data-lucide="eye"></i>
                         </button>
                     </td>
                 `;
@@ -160,6 +161,8 @@ const render = () => {
             });
         }
     }
+
+    createIcons({ icons });
 };
 
 // Event Handlers
@@ -228,7 +231,8 @@ const handleClick = async (e) => {
         const id = restockBtn.dataset.id;
         const itemIndex = state.findIndex(i => i.id === id);
         if (itemIndex !== -1) {
-            restockBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Restocking...';
+            restockBtn.innerHTML = '<i data-lucide="loader-circle"></i> Restocking...';
+            createIcons({ icons });
             restockBtn.disabled = true;
             
             const oldQty = state[itemIndex].quantity;
@@ -255,7 +259,8 @@ const handleSubmit = async (e) => {
         const id = root.querySelector('#form-id').value;
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        submitBtn.innerHTML = '<i data-lucide="loader-circle"></i> Saving...';
+        createIcons({ icons });
         submitBtn.disabled = true;
 
         const formItem = {
@@ -365,9 +370,9 @@ const openDetailsModal = (id) => {
     const currentThreshold = globalSettings ? globalSettings.fleetPolicies.lowStockThreshold : item.minThreshold;
 
     content.innerHTML = `
-        <button class="modal-close-icon close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close-icon close-modal-btn"><i data-lucide="x"></i></button>
         <div class="modal-header-info">
-            <div class="modal-header-icon"><i class="fa-solid fa-cube"></i></div>
+            <div class="modal-header-icon"><i data-lucide="box"></i></div>
             <div class="modal-header-text">
                 <h3>${item.name}</h3>
                 <span>${item.id} • ${item.sku}</span>
@@ -411,6 +416,8 @@ const openDetailsModal = (id) => {
         </div>
     `;
 
+    createIcons({ icons });
+
     modal.style.display = 'grid';
     modal.classList.add('active');
 };
@@ -418,10 +425,12 @@ const openDetailsModal = (id) => {
 // Lifecycle Methods
 export async function mount(rootElement) {
     root = rootElement;
+    createIcons({ icons });
     
     // Disable interactions or show a loading state on the table
     const tableBody = root.querySelector('#inventory-table-body');
-    if (tableBody) tableBody.innerHTML = '<tr><td colspan="14" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading Data...</td></tr>';
+    if (tableBody) tableBody.innerHTML = '<tr><td colspan="14" style="text-align:center;"><i data-lucide="loader-circle"></i> Loading Data...</td></tr>';
+    createIcons({ icons });
     
     try {
         const [invData, setObj] = await Promise.all([

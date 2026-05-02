@@ -5,27 +5,27 @@
             <p class="helper-text" id="tracked-parts-count">0 parts tracked</p>
         </div>
         <div class="header-actions">
-            <button class="button secondary"><i class="fa-solid fa-download"></i> Export</button>
-            <button class="button primary" id="add-part-btn"><i class="fa-solid fa-plus"></i> Add Part</button>
+            <button class="button secondary"><i data-lucide="download"></i> Export</button>
+            <button class="button primary" id="add-part-btn"><i data-lucide="plus"></i> Add Part</button>
         </div>
     </div>
 
     <!-- Analytics Cards -->
     <div class="analytics-cards">
         <div class="card stat-card">
-            <div class="stat-title">TOTAL ITEMS <i class="fa-solid fa-cube" style="color: var(--color-primary)"></i></div>
+            <div class="stat-title">TOTAL ITEMS <i data-lucide="box" style="color: var(--color-primary)"></i></div>
             <div class="stat-value" id="stat-total-items">0</div>
         </div>
         <div class="card stat-card">
-            <div class="stat-title">TOTAL VALUE <i class="fa-solid fa-chart-simple" style="color: #10b981"></i></div>
+            <div class="stat-title">TOTAL VALUE <i data-lucide="chart-column" style="color: #10b981"></i></div>
             <div class="stat-value" id="stat-total-value">EGP 0</div>
         </div>
         <div class="card stat-card">
-            <div class="stat-title">LOW STOCK <i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b"></i></div>
+            <div class="stat-title">LOW STOCK <i data-lucide="triangle-alert" style="color: #f59e0b"></i></div>
             <div class="stat-value" id="stat-low-stock">0</div>
         </div>
         <div class="card stat-card">
-            <div class="stat-title">OUT OF STOCK <i class="fa-solid fa-circle-exclamation text-danger" style="color: var(--color-danger)"></i></div>
+            <div class="stat-title">OUT OF STOCK <i data-lucide="circle-alert" class="text-danger" style="color: var(--color-danger)"></i></div>
             <div class="stat-value" id="stat-out-stock">0</div>
         </div>
     </div>
@@ -33,7 +33,7 @@
     <!-- Banner -->
     <div class="warning-banner card" id="attention-banner" style="display: none;">
         <div class="banner-content">
-            <i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b; font-size: 24px;"></i>
+            <i data-lucide="triangle-alert" style="color: #f59e0b; font-size: 24px;"></i>
             <div>
                 <strong><span id="banner-attention-count">0</span> items need attention</strong>
                 <p><span id="banner-out-count">0</span> out of stock, <span id="banner-low-count">0</span> below minimum level</p>
@@ -45,7 +45,7 @@
     <!-- Filters and Toolbar -->
     <div class="inventory-toolbar">
         <div class="search-field">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <i data-lucide="search" class="search-icon"></i>
             <input type="text" id="inventory-search" placeholder="Search by name, SKU, or ID..." />
         </div>
         <div class="toolbar-filters">
@@ -113,7 +113,7 @@
         <div class="modal-content form-modal-content">
             <div class="modal-header">
                 <h3 id="form-modal-title">Add Part</h3>
-                <button class="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+                <button class="close-modal-btn"><i data-lucide="x"></i></button>
             </div>
             <form id="part-form" class="stack">
                 <input type="hidden" id="form-id" />

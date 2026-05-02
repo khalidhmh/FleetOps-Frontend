@@ -1,47 +1,88 @@
-import api from "/shared/api-handler.js"; //
-import { usersMockData, USERS_STORAGE_KEY, initialMockData } from "../storage/users.js";
+import api from "/shared/api-handler.js";
 
-// ─── Global Setup ─────────────────────────────────────────────────────────────
-api.setBaseURL("http://localhost:3000"); //
+// إعداد الرابط الأساسي للباك إند
+api.setBaseURL("http://localhost:8000/api/v1"); 
 
-const delay = (ms = 100) => new Promise(resolve => setTimeout(resolve, ms));
+// دالة مساعدة لجلب التوكن
+const getHeaders = () => ({
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${localStorage.getItem('token')}`
+});
 
-// ─── API Methods ────────────────────────────────────────────────────────────
+// 1. جلب المستخدمين
+// API: GET /api/v1/users
+export async function getUsers(filters = {}) {
+    try {
+        const queryParams = new URLSearchParams();
+        // التعديل هنا: التأكد إن الـ role مش all (سواء كابيتال أو سمول)
+        if (filters.role && filters.role.toLowerCase() !== 'all') {
+            queryParams.append('role', filters.role);
+        }
+        if (filters.search) queryParams.append('search', filters.search);
+        
+        const response = await fetch(`http://localhost:8000/api/v1/users?${queryParams.toString()}`, {
+            method: 'GET',
+            headers: getHeaders()
+        });
 
-// API: GET /api/users
-export async function getUsers() {
-    await delay(100);
-    const stored = localStorage.getItem(USERS_STORAGE_KEY);
-    if (!stored) {
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(initialMockData));
-        return [...initialMockData];
+        const result = await response.json();
+        
+        if (result.success) {
+            return result.data.data.map(user => ({
+                id: user.user_id,
+                fullName: user.name,
+                email: user.email,
+                phone: user.phone_no || '--',
+                role: user.role,
+                status: user.is_active ? 'active' : 'inactive',
+                city: '--'
+            })); 
+        }
+        console.error("Backend Error:", result.message);
+        return [];
+    } catch (error) {
+        console.error("Network Error:", error);
+        return [];
     }
-    return JSON.parse(stored);
+}
+// 2. إضافة مستخدم جديد
+export async function createUser(userData) {
+    try {
+        const response = await fetch(`http://localhost:8000/api/v1/users`, {
+            method: 'POST',
+            headers: {
+                ...getHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
 }
 
-// API: POST/PUT /api/users
-export async function updateUsers(newUsers) {
-    await delay(100);
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(newUsers));
-    return { success: true };
+// 3. تحديث مستخدم (تعديل البيانات أو تغيير الحالة)
+export async function updateUsers(userId, userData) {
+    try {
+        const response = await fetch(`http://localhost:8000/api/v1/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                ...getHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
 }
 
-// Additional helper functions for mock data access(لو حد منكم عاوز ياخد ال users بردو استعملوا دي )
-
-export function getAllUsersMockData() {
-    return [...usersMockData];
-}
-
-export function getUserByIdMockData(userId) {
-    return usersMockData.find((user) => user.id === userId) || null;
-}
-
-// Exporting a combined object for easier imports in components
 const UsersApi = {
     getUsers,
     updateUsers,
-    getAllUsersMockData,
-    getUserByIdMockData,
+    createUser
 };
 
 export default UsersApi;

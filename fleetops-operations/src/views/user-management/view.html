@@ -7,11 +7,11 @@
         </div>
         <div class="users-header__actions">
             <button id="users-export-btn" class="button secondary" type="button">
-                <i class="fa-solid fa-download"></i>
+                <i data-lucide="download"></i>
                 Export
             </button>
             <button id="users-add-btn" class="button primary" type="button">
-                <i class="fa-solid fa-plus"></i>
+                <i data-lucide="plus"></i>
                 Add User
             </button>
         </div>
@@ -26,7 +26,8 @@
             <button class="filter-tab is-active" data-filter="all" type="button">All</button>
             <button class="filter-tab" data-filter="customer" type="button">Customer</button>
             <button class="filter-tab" data-filter="dispatcher" type="button">Dispatcher</button>
-            <button class="filter-tab" data-filter="supervisor" type="button">Supervisor</button>
+            <!-- التعديل هنا: fleetmanager -->
+            <button class="filter-tab" data-filter="fleetmanager" type="button">FleetManager</button>
         </div>
     </div>
 
@@ -39,7 +40,7 @@
                     <th>Role</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>City</th>
+                    <!-- تم حذف City -->
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -47,7 +48,7 @@
             <tbody id="users-table-body">
                 <tr>
                     <td colspan="8" class="users-table__loading">
-                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                        <i data-lucide="loader-circle"></i>
                         Loading users...
                     </td>
                 </tr>
@@ -63,7 +64,7 @@
         <div class="modal__header">
             <h3 class="heading-md" id="modal-title">Add User</h3>
             <button id="modal-close-btn" class="modal__close" type="button" aria-label="Close">
-                <i class="fa-solid fa-xmark"></i>
+                <i data-lucide="x"></i>
             </button>
         </div>
         <div class="modal__body stack">
@@ -85,15 +86,15 @@
                     <option value="">Select a role...</option>
                     <option value="customer">Customer</option>
                     <option value="dispatcher">Dispatcher</option>
-                    <option value="supervisor">Supervisor</option>
+                    <option value="FleetManager">FleetManager</option>
                     <option value="driver">Driver</option>
                     <option value="mechanic">Mechanic</option>
                 </select>
             </div>
-            <div>
-                <label class="label" for="modal-city">City</label>
-                <input id="modal-city" type="text" placeholder="e.g. Cairo" />
-            </div>
+            <!-- <div> -->
+                <!-- <label class="label" for="modal-city">City</label>
+                <input id="modal-city" type="text" placeholder="e.g. Cairo" /> -->
+            <!-- </div> -->
             <div>
                 <label class="label" for="modal-status">Status</label>
                 <select id="modal-status">

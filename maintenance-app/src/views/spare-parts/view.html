@@ -1,12 +1,12 @@
 ﻿<section class="view-page inventory-container">
     <div class="inventory-header">
         <div class="header-content">
-            <h2><i class="fa-solid fa-cube text-primary"></i> Spare Parts Request</h2>
+            <h2><i data-lucide="box" class="text-primary"></i> Spare Parts Request</h2>
             <p>View available inventory and request parts for vehicle maintenance</p>
         </div>
         <div class="header-actions">
             <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
+                <i data-lucide="search"></i>
                 <input type="text" id="inventory-search" placeholder="Search by name, SKU, or ID..." />
             </div>
             <select id="category-filter" class="filter-select">
@@ -27,21 +27,21 @@
     <!-- Simplified Analytics specific to mechanics -->
     <div class="inventory-analytics">
         <div class="analytics-card">
-            <div class="card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div class="card-icon"><i data-lucide="boxes"></i></div>
             <div class="card-data">
                 <span class="card-label">Total Unique Parts</span>
                 <strong id="stat-total-items">0</strong>
             </div>
         </div>
         <div class="analytics-card warning">
-            <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="card-icon"><i data-lucide="triangle-alert"></i></div>
             <div class="card-data">
                 <span class="card-label">Low Stock Warning</span>
                 <strong id="stat-low-stock">0</strong>
             </div>
         </div>
         <div class="analytics-card danger">
-            <div class="card-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+            <div class="card-icon"><i data-lucide="circle-x"></i></div>
             <div class="card-data">
                 <span class="card-label">Out of Stock</span>
                 <strong id="stat-out-stock">0</strong>
@@ -69,6 +69,7 @@
                         <th>SKU</th>
                         <th>Category</th>
                         <th>Qty</th>
+                        <th>Min Qty</th>
                         <th>Status</th>
                         <th>Stock Level</th>
                         <th class="text-center">Action</th>
@@ -80,7 +81,7 @@
             </table>
             
             <div class="empty-state" id="inventory-empty-state" style="display: none;">
-                <i class="fa-solid fa-box-open empty-icon"></i>
+                <i data-lucide="package-open" class="empty-icon"></i>
                 <h3>No parts found</h3>
                 <p>Try adjusting your search or filters to find what you need.</p>
             </div>
@@ -91,7 +92,7 @@
 <!-- Request Part Modal -->
 <div class="modal-overlay" id="request-modal">
     <div class="modal-content request-modal">
-        <button class="modal-close-icon close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close-icon close-modal-btn"><i data-lucide="x"></i></button>
         <h3 id="request-modal-title">Request/Use Part</h3>
         <p class="modal-subtitle" id="request-part-name">Engine Oil Filter (PRT-1001)</p>
         
@@ -119,7 +120,7 @@
 
             <div class="modal-actions">
                 <button type="button" class="button outlined close-modal-btn">Cancel</button>
-                <button type="submit" class="button primary" id="submit-request-btn"><i class="fa-solid fa-wrench"></i> Submit Request</button>
+                <button type="submit" class="button primary" id="submit-request-btn"><i data-lucide="wrench"></i> Submit Request</button>
             </div>
         </form>
     </div>

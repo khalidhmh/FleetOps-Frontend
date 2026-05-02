@@ -1,14 +1,10 @@
-import { getUsers, updateUsers } from "/src/services/api/users.js";
-import { logAuditAction } from "/src/services/api/auditLogger.js";
-
-// ─── State ────────────────────────────────────────────────────────────────────
+import { getUsers, updateUsers, createUser } from "/src/services/api/users.js";
+import { createIcons, icons } from '/node_modules/lucide/dist/esm/lucide.mjs';
 
 let _users = [];
 let _filter = "all";
 let _editingId = null;
 let _handlers = {};
-
-// ─── Data Methods (storage layer) ─────────────
 
 async function loadUsers() {
     _users = await getUsers();
@@ -16,48 +12,20 @@ async function loadUsers() {
     applyFilter();
 }
 
-async function persistUpdate(id, changes) {
-    const idx = _users.findIndex((u) => u.id === id);
-    if (idx !== -1) {
-        const oldVal = { ..._users[idx] };
-        _users[idx] = { ..._users[idx], ...changes };
-        await updateUsers([..._users]);
-        await logAuditAction("ADM-001", "Admin", "Updated", "User", id, oldVal, _users[idx]);
-    }
-}
-
-async function persistCreate(payload) {
-    const newUser = {
-        ...payload,
-        id: "USR-" + Date.now(),
-        createdAt: new Date().toISOString(),
-        lastLoginAt: null,
-    };
-    _users.push(newUser);
-    await updateUsers([..._users]);
-    await logAuditAction("ADM-001", "Admin", "Created", "User", newUser.id, null, newUser);
-}
-
-// ─── Render Helpers ───────────────────────────────────────────────────────────
-
 function getInitials(name = "") {
-    return name
-        .split(" ")
-        .slice(0, 2)
-        .map((w) => w[0]?.toUpperCase() ?? "")
-        .join("");
+    return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 }
 
 function roleBadge(role = "") {
-    const known = ["customer", "driver", "dispatcher", "mechanic", "supervisor"];
-    const cls = known.includes(role.toLowerCase()) ? role.toLowerCase() : "default";
-    const label = role.charAt(0).toUpperCase() + role.slice(1);
+    const known = ["customer", "driver", "dispatcher", "mechanic", "fleetmanager"];
+    const cls = known.includes(role?.toLowerCase()) ? role.toLowerCase() : "default";
+    const label = role ? (role.charAt(0).toUpperCase() + role.slice(1)) : 'Unknown';
     return `<span class="role-badge role-badge--${cls}">${label}</span>`;
 }
 
 function statusBadge(status = "") {
     const cls = ["active", "inactive", "suspended"].includes(status) ? status : "inactive";
-    const label = status.charAt(0).toUpperCase() + status.slice(1);
+    const label = status ? (status.charAt(0).toUpperCase() + status.slice(1)) : 'Inactive';
     return `<span class="status-badge status-badge--${cls}">${label}</span>`;
 }
 
@@ -66,7 +34,7 @@ function renderRows(users) {
     if (!tbody) return;
 
     if (!users.length) {
-        tbody.innerHTML = `<tr><td colspan="8" class="users-table__empty">No users found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="users-table__empty">No users found.</td></tr>`;
         return;
     }
 
@@ -82,19 +50,20 @@ function renderRows(users) {
             <td>${roleBadge(u.role)}</td>
             <td>${u.email ?? "—"}</td>
             <td>${u.phone ?? "—"}</td>
-            <td>${u.city ?? "—"}</td>
             <td>${statusBadge(u.status)}</td>
             <td>
                 <div class="row-actions">
                     <button class="row-action-btn" data-action="edit" data-id="${u.id}" title="Edit" type="button">
-                        <i class="fa-regular fa-pen-to-square"></i>
+                        <i data-lucide="square-pen"></i>
                     </button>
                     <button class="row-action-btn danger" data-action="toggle" data-id="${u.id}" title="Toggle status" type="button">
-                        <i class="fa-solid fa-power-off"></i>
+                        <i data-lucide="power-off"></i>
                     </button>
                 </div>
             </td>
         </tr>`).join("");
+
+    createIcons({ icons });
 }
 
 function applyFilter() {
@@ -105,7 +74,7 @@ function applyFilter() {
             !search ||
             u.fullName?.toLowerCase().includes(search) ||
             u.email?.toLowerCase().includes(search) ||
-            u.id?.toLowerCase().includes(search);
+            String(u.id).toLowerCase().includes(search);
         return matchRole && matchSearch;
     });
     renderRows(filtered);
@@ -116,8 +85,6 @@ function updateCountLabel() {
     if (el) el.textContent = `${_users.length} member${_users.length !== 1 ? "s" : ""}`;
 }
 
-// ─── Modal ────────────────────────────────────────────────────────────────────
-
 function openModal(user = null) {
     _editingId = user?.id ?? null;
     const modal = document.getElementById("users-modal");
@@ -126,68 +93,102 @@ function openModal(user = null) {
     document.getElementById("modal-name").value = user?.fullName ?? "";
     document.getElementById("modal-email").value = user?.email ?? "";
     document.getElementById("modal-phone").value = user?.phone ?? "";
-    document.getElementById("modal-role").value = user?.role ?? "";
-    document.getElementById("modal-city").value = user?.city ?? "";
+    
+    const roleSelect = document.getElementById("modal-role");
+    if (roleSelect) {
+        let roleVal = user?.role || "";
+        if (roleVal.toLowerCase() === "fleetmanager") roleVal = "FleetManager";
+        else roleVal = roleVal.toLowerCase();
+        roleSelect.value = roleVal;
+    }
+
     document.getElementById("modal-status").value = user?.status ?? "active";
     document.getElementById("modal-title").textContent = user ? "Edit User" : "Add User";
 
     modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
 }
 
 function closeModal() {
     const modal = document.getElementById("users-modal");
     if (!modal) return;
     modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
     _editingId = null;
 }
 
+const roleMap = {
+    'customer': 'Customer',
+    'dispatcher': 'Dispatcher',
+    'fleetmanager': 'FleetManager',
+    'driver': 'Driver',
+    'mechanic': 'Mechanic'
+};
+
 async function saveModal() {
+    const rawRole = document.getElementById("modal-role")?.value?.toLowerCase();
+    
     const payload = {
-        fullName: document.getElementById("modal-name")?.value.trim(),
+        name: document.getElementById("modal-name")?.value.trim(),
         email: document.getElementById("modal-email")?.value.trim(),
         phone: document.getElementById("modal-phone")?.value.trim(),
-        role: document.getElementById("modal-role")?.value,
-        city: document.getElementById("modal-city")?.value.trim(),
+        role: roleMap[rawRole] || 'Customer',
         status: document.getElementById("modal-status")?.value,
     };
 
-    if (!payload.fullName || !payload.email || !payload.role) return;
+    if (!_editingId) {
+        payload.password = "password123";
+        payload.password_confirmation = "password123";
+    }
+
+    if (!payload.name || !payload.email || !payload.role) {
+        alert("Please fill required fields.");
+        return;
+    }
 
     const submitBtn = document.getElementById("modal-save-btn");
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-    }
+    if (submitBtn) submitBtn.innerHTML = 'Saving...';
 
+    let result;
     if (_editingId) {
-        await persistUpdate(_editingId, payload);
+        result = await updateUsers(_editingId, payload);
     } else {
-        await persistCreate(payload);
+        result = await createUser(payload);
     }
 
-    if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Save User';
-    }
+    if (submitBtn) submitBtn.innerHTML = 'Save User';
 
-    updateCountLabel();
-    applyFilter();
-    closeModal();
+    if (result && result.success !== false) {
+        await loadUsers();
+        closeModal();
+    } else {
+        alert("Error: " + (result?.message || "Failed to save user."));
+    }
 }
 
 async function toggleUserStatus(id) {
-    const user = _users.find((u) => u.id === id);
+    const user = _users.find((u) => String(u.id) === String(id));
     if (!user) return;
-    await persistUpdate(id, { status: user.status === "active" ? "inactive" : "active" });
-    applyFilter();
+    
+    const newStatus = user.status === "active" ? "inactive" : "active";
+    
+    const payload = {
+        name: user.fullName,
+        email: user.email,
+        phone: user.phone === '--' ? '' : user.phone,
+        role: user.role, 
+        status: newStatus
+    };
+
+    let result = await updateUsers(id, payload);
+    if (result && result.success !== false) {
+        await loadUsers();
+    } else {
+        alert("Error toggling status: " + (result?.message || ""));
+    }
 }
 
-// ─── Mount / Unmount ──────────────────────────────────────────────────────────
-
 export function mount(rootElement) {
-    loadUsers(); // This is async but we don't need to await it for the basic UI to mount
+    createIcons({ icons });
+    loadUsers();
 
     const filterTabs = rootElement.querySelector("#users-filter-tabs");
     _handlers.filterClick = (e) => {
@@ -195,7 +196,7 @@ export function mount(rootElement) {
         if (!tab) return;
         filterTabs.querySelectorAll(".filter-tab").forEach((t) => t.classList.remove("is-active"));
         tab.classList.add("is-active");
-        _filter = tab.dataset.filter;
+        _filter = tab.dataset.filter.toLowerCase();
         applyFilter();
     };
     filterTabs?.addEventListener("click", _handlers.filterClick);
@@ -206,24 +207,12 @@ export function mount(rootElement) {
     _handlers.addClick = () => openModal(null);
     rootElement.querySelector("#users-add-btn")?.addEventListener("click", _handlers.addClick);
 
-    _handlers.exportClick = () => {
-        const csv = [
-            ["ID", "Name", "Role", "Email", "Phone", "City", "Status"],
-            ..._users.map((u) => [u.id, u.fullName, u.role, u.email, u.phone, u.city ?? "", u.status]),
-        ].map((r) => r.join(",")).join("\n");
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-        a.download = "users.csv";
-        a.click();
-    };
-    rootElement.querySelector("#users-export-btn")?.addEventListener("click", _handlers.exportClick);
-
     _handlers.tableClick = (e) => {
         const btn = e.target.closest("[data-action]");
         if (!btn) return;
         const { action, id } = btn.dataset;
         if (action === "edit") {
-            const user = _users.find((u) => u.id === id);
+            const user = _users.find((u) => String(u.id) === String(id));
             if (user) openModal(user);
         } else if (action === "toggle") {
             toggleUserStatus(id);
@@ -233,29 +222,13 @@ export function mount(rootElement) {
 
     _handlers.modalClose = closeModal;
     _handlers.modalSave = saveModal;
-    _handlers.backdropClick = (e) => {
-        if (e.target === document.getElementById("users-modal")) closeModal();
-    };
 
     rootElement.querySelector("#modal-close-btn")?.addEventListener("click", _handlers.modalClose);
     rootElement.querySelector("#modal-cancel-btn")?.addEventListener("click", _handlers.modalClose);
     rootElement.querySelector("#modal-save-btn")?.addEventListener("click", _handlers.modalSave);
-    rootElement.querySelector("#users-modal")?.addEventListener("click", _handlers.backdropClick);
 }
 
 export function unmount(rootElement) {
-    rootElement.querySelector("#users-filter-tabs")?.removeEventListener("click", _handlers.filterClick);
-    rootElement.querySelector("#users-search-input")?.removeEventListener("input", _handlers.searchInput);
-    rootElement.querySelector("#users-add-btn")?.removeEventListener("click", _handlers.addClick);
-    rootElement.querySelector("#users-export-btn")?.removeEventListener("click", _handlers.exportClick);
-    rootElement.querySelector("#users-table-body")?.removeEventListener("click", _handlers.tableClick);
-    rootElement.querySelector("#modal-close-btn")?.removeEventListener("click", _handlers.modalClose);
-    rootElement.querySelector("#modal-cancel-btn")?.removeEventListener("click", _handlers.modalClose);
-    rootElement.querySelector("#modal-save-btn")?.removeEventListener("click", _handlers.modalSave);
-    rootElement.querySelector("#users-modal")?.removeEventListener("click", _handlers.backdropClick);
-
     _users = [];
-    _filter = "all";
-    _editingId = null;
     _handlers = {};
 }

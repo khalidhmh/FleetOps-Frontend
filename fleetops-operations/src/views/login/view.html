@@ -1,0 +1,25 @@
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="brand-icon"><i data-lucide="truck"></i></div>
+            <h2>FleetOps</h2>
+            <p>Welcome back! Please login to your account.</p>
+        </div>
+        <form id="login-form" class="stack">
+            <div id="login-error" class="login-error" style="display: none;"></div>
+            <div class="input-group">
+                <label class="label" for="email">Email Address</label>
+                <input type="email" id="email" required placeholder="admin@example.com" value="" />
+            </div>
+            <div style="position: relative;">
+                  <input type="password" id="password" placeholder="Enter your password" required />
+                  <button type="button" id="toggle-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #64748b; padding: 0;">
+                      <i data-lucide="eye"></i>
+                </button>
+            </div>
+            <button type="submit" class="button primary" id="login-btn">
+                <span>Sign In</span>
+            </button>
+        </form>
+    </div>
+</div>

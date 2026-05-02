@@ -11,6 +11,17 @@ export function initRouter({ outletId }) {
 
     async function renderCurrentRoute() {
         const currentPath = normalizePath(window.location.pathname);
+        // ----------(عشان محدش يدخل من غير التوكن و تبقا ال login اول صفحة تظهر ) التعديل هنا: حماية المسارات ----------
+        const token = localStorage.getItem('token');
+        if (!token && currentPath !== '/login') {
+            navigateTo('/login');
+            return;
+        }
+        if (token && currentPath === '/login') {
+            navigateTo('/');
+            return;
+        }
+        // -----------------------------------------------
         const activeRoute =
             routes.find((route) => route.path === currentPath) ?? notFoundRoute;
 

@@ -1,5 +1,14 @@
 export const routes = [
     {
+        path: "/login",
+        title: "Login",
+        view: {
+            html: "/src/views/login/view.html",
+            css: "/src/views/login/view.css",
+            js: "/src/views/login/view.js",
+        },
+    },
+    {
         path: "/",
         title: "Dashboard",
         view: {

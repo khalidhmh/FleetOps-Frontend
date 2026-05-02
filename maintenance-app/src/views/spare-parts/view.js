@@ -1,6 +1,7 @@
 ﻿import { getInventory, updateInventory } from '../../services/api/inventory.js';
 import { getSettings } from '../../services/api/settings.js';
 import { logAuditAction } from '../../services/api/auditLogger.js';
+import { createIcons, icons } from '../../../../node_modules/lucide/dist/esm/lucide.mjs';
 
 let root = null;
 let state = [];
@@ -104,7 +105,7 @@ const render = () => {
                     </td>
                     <td class="text-center">
                         <button class="action-btn request-btn" data-id="${item.id}" ${item.quantity === 0 ? 'disabled' : ''}>
-                            <i class="fa-solid fa-hand-holding-hand"></i> Use
+                            <i data-lucide="hand-helping"></i> Use
                         </button>
                     </td>
                 `;
@@ -112,6 +113,8 @@ const render = () => {
             });
         }
     }
+
+    createIcons({ icons });
 };
 
 // Event Handlers
@@ -173,7 +176,8 @@ const handleSubmit = async (e) => {
 
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+        submitBtn.innerHTML = '<i data-lucide="loader-circle"></i> Processing...';
+        createIcons({ icons });
         submitBtn.disabled = true;
 
         const oldQty = state[itemIndex].quantity;
@@ -237,7 +241,8 @@ export async function mount(rootElement) {
     root = rootElement;
     
     const tableBody = root.querySelector('#inventory-table-body');
-    if (tableBody) tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading Data...</td></tr>';
+    if (tableBody) tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;"><i data-lucide="loader-circle"></i> Loading Data...</td></tr>';
+    createIcons({ icons });
     
     try {
         const [invData, setObj] = await Promise.all([
