@@ -709,9 +709,23 @@ export function initFleetManagement() {
   });
 }
 
-// SPA-aware boot
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initFleetManagement);
-} else {
-  initFleetManagement();
+// ─── 13. SPA-compatible mount/unmount ───────────────────────────────────
+const _docListeners = [];
+
+function addDocListener(type, fn, opts) {
+    document.addEventListener(type, fn, opts);
+    _docListeners.push({ type, fn, opts });
+}
+
+export function mount() {
+    initFleetManagement();
+}
+
+export function unmount() {
+    // Remove all document-level listeners added during mount
+    _docListeners.forEach(({ type, fn, opts }) => {
+        document.removeEventListener(type, fn, opts);
+    });
+    _docListeners.length = 0;
+    destroyCharts();
 }
