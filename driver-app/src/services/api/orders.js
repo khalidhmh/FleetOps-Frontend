@@ -6,21 +6,24 @@ api.setBaseURL("http://localhost:8000");
 
 // ─── API Methods ─────────────────────────────────────────────────────────────
 
-/**
- * Fetches a vehicle by its ID from the backend.
- *
- * @param {string|number} vehicle_id - The vehicle ID.
- * @returns {Promise<Object>} The vehicle data object.
- */
-async function getVehicleById(vehicle_id) {
-  const response = await api.get(`/api/v1/dispatch/vehicles/${vehicle_id}`);
-  return response.data.data;
-}
+
 
 // ────────────────────────────────────────────────────────────────
+const OrdersAPI = {
+  /**
+   * Fetches all orders for a specific route.
+   * @param {string|number} routeId 
+   * @returns {Promise<Object>}
+   */
+  getOrdersByRoute: (routeId) => api.get(`/api/v1/orders/route/${routeId}`),
 
-const VehiclesStorage = {
-  getVehicleById,
+  /**
+   * Saves Proof of Delivery (POD) for an order.
+   * @param {string|number} orderId 
+   * @param {Object} payload 
+   * @returns {Promise<Object>}
+   */
+  savePOD: (orderId, payload) => api.post(`/api/v1/orders/${orderId}/pod`, payload),
 };
 
-export default VehiclesStorage;
+export default OrdersAPI;

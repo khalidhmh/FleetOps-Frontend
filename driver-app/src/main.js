@@ -1,5 +1,12 @@
 import { initRouter } from "./router/router.js";
 import { updateLayout } from "./utils/utils.js";
+import api from "/shared/api-handler.js";
+
+// Restore token if exists
+const savedToken = localStorage.getItem("auth_token");
+if (savedToken) {
+    api.setAuthToken(savedToken, "Bearer");
+}
 
 // App Entry Point & Authentication Guard
 const initialPath = window.location.pathname;

@@ -1,190 +1,126 @@
-import { getStopDetails } from "../../api/index.js";
+import OrdersAPI from "../../services/api/orders.js";
 
+/**
+ * Stop Details View Module
+ * Senior Frontend Implementation
+ * 
+ * Fetches and filters route orders to find the matching stop details.
+ */
 export async function mount(rootElement) {
-  const view = rootElement || document;
-  const container = view.querySelector(".stop-details-container");
+    if (!rootElement) return;
 
-  let stopId = localStorage.getItem("current_stop_id");
+    // 1. State Retrieval: Support URL params, snake_case (app default) and camelCase (prompt requirement)
+    const urlParams = new URLSearchParams(window.location.search);
+    const routeId = urlParams.get("routeId") || localStorage.getItem("route_id") || localStorage.getItem("routeId") || "4";
+    const currentStopId = urlParams.get("stopId") || localStorage.getItem("current_stop_id") || localStorage.getItem("currentStopId") || "20005";
 
-  if (!container) return;
+    try {
+        // 2. Data Extraction: Fetch route orders using the service
+        const response = await OrdersAPI.getRouteOrders(routeId);
+        
+        // Ensure we access the array correctly (response.data.data per JSON structure)
+        const orders = response?.data?.data || [];
 
-  try {
-    let stop = null;
-    if (stopId) {
-      try {
-        stop = await getStopDetails(stopId);
-      } catch (err) {
-        console.warn(
-          "Stop not found from localStorage, falling back to first active stop.",
+        // 3. Filtering: Find the exact order matching the current stop
+        const order = orders.find(o => 
+            o?.route_stops?.some(rs => String(rs.stop_id) === String(currentStopId))
         );
-      }
-    }
 
-    if (!stop) {
-      const driverId = localStorage.getItem("driver_id");
-      if (driverId) {
-        const { getDriverRoutes } = await import("../../api/index.js");
-        const routes = await getDriverRoutes(driverId);
-        const activeRoute = routes.find((r) => r.status === "active");
-        if (activeRoute) {
-          stop =
-            activeRoute.stops.find((s) => s.status === "pending") ||
-            activeRoute.stops[0];
-          if (stop) {
-            localStorage.setItem("current_stop_id", stop.stop_id);
-          }
-        }
-      }
-    }
-
-    if (!stop) return;
-
-    // --- Data Hydration ---
-
-    // 1. Header / Basic Info
-    const stopNumberEl = view.querySelector(".data-stop-number");
-    if (stopNumberEl) stopNumberEl.textContent = `STOP #${stop.stop_number}`;
-
-    const statusEl = view.querySelector(".data-status");
-    if (statusEl) {
-      statusEl.textContent =
-        stop.status === "delivered" ? "COMPLETED" : "PENDING SCAN";
-    }
-
-    const customerNameEl = view.querySelector(".data-customer-name");
-    if (customerNameEl) customerNameEl.textContent = stop.customer_name;
-
-    const addressEl = view.querySelector(".data-address");
-    if (addressEl) {
-      addressEl.innerHTML = stop.address.replace(/, /g, ",<br>");
-    }
-
-    // 2. Window and Payment Grid
-    const timeWindowEl = view.querySelector(".data-time-window");
-    if (timeWindowEl)
-      timeWindowEl.innerHTML = stop.time_window.replace(" - ", " —<br>");
-
-    const etaEl = view.querySelector(".data-eta");
-    if (etaEl) etaEl.textContent = `ETA: ${stop.eta_minutes} min`;
-
-    const paymentAmountEl = view.querySelector(".data-payment-amount");
-    if (paymentAmountEl) {
-      paymentAmountEl.textContent = `${stop.payment.currency} ${stop.payment.amount.toFixed(2)}`;
-    }
-
-    const paymentStatusEl = view.querySelector(".data-payment-status");
-    if (paymentStatusEl) {
-      if (stop.payment.cod_required) {
-        paymentStatusEl.textContent = "COD REQUIRED";
-        paymentStatusEl.className = "label text-danger m-0 data-payment-status";
-      } else {
-        paymentStatusEl.textContent = "PAID";
-        paymentStatusEl.className =
-          "label text-success m-0 data-payment-status";
-      }
-    }
-
-    // 3. Contact & Instructions
-    const phoneEl = view.querySelector(".data-phone-number");
-    if (phoneEl) phoneEl.textContent = stop.phone_number;
-
-    const instructionsEl = view.querySelector(".data-special-instructions");
-    if (instructionsEl) {
-      instructionsEl.textContent = `"${stop.special_instructions || "None"}"`;
-    }
-
-    // 4. Parcels List Rendering
-    const parcelCountHeaderEl = view.querySelector(".data-parcel-count-header");
-    if (parcelCountHeaderEl) {
-      parcelCountHeaderEl.textContent = `PARCEL LIST (${stop.parcels.length})`;
-    }
-
-    const parcelStatusEl = view.querySelector(".data-parcel-status");
-    if (parcelStatusEl) {
-      parcelStatusEl.textContent =
-        stop.status === "delivered" ? "Delivered" : "Awaiting";
-    }
-
-    const parcelsListContainer = view.querySelector(".parcels-list");
-    const parcelTemplate = view.querySelector(".parcel-card-template");
-
-    if (parcelsListContainer && parcelTemplate) {
-      // Clear existing parcels except the template
-      Array.from(parcelsListContainer.children).forEach((child) => {
-        if (!child.classList.contains("parcel-card-template")) {
-          child.remove();
-        }
-      });
-
-      // Inject cloned parcel cards
-      stop.parcels.forEach((parcel) => {
-        const clone = parcelTemplate.cloneNode(true);
-        clone.style.display = ""; // Remove display: none
-        clone.classList.remove("parcel-card-template");
-
-        const idEl = clone.querySelector(".data-parcel-id");
-        if (idEl) idEl.textContent = `Parcel #${parcel.parcel_id}`;
-
-        const detailsEl = clone.querySelector(".data-parcel-details");
-        if (detailsEl)
-          detailsEl.textContent = `${parcel.type} • ${parcel.weight}`;
-
-        const iconEl = clone.querySelector(".data-parcel-icon");
-        if (iconEl) {
-          const color =
-            parcel.status === "delivered"
-              ? "var(--color-success)"
-              : "var(--color-danger)";
-          iconEl.setAttribute("stroke", color);
+        if (!order) {
+            console.error(`ERROR: Order for stop ID ${currentStopId} not found in route ${routeId}`);
+            return;
         }
 
-        parcelsListContainer.appendChild(clone);
-      });
-    }
+        // Find the specific route_stop object to get the stop_no
+        const matchingStop = order?.route_stops?.find(rs => String(rs.stop_id) === String(currentStopId));
 
-    // --- Event Listeners ---
+        // 4. DOM Mapping (CASE-SENSITIVE) with safety checks and optional chaining
+        const safeSetText = (selector, text) => {
+            const el = rootElement.querySelector(selector);
+            if (el) el.textContent = text || 'N/A';
+        };
 
-    // Navigation Logic
-    const navigateBtn = view.querySelector(".navigate-btn");
-    if (navigateBtn) {
-      navigateBtn.addEventListener("click", () => {
-        const url = `https://www.google.com/maps?q=${stop.coords.lat},${stop.coords.lng}`;
-        window.open(url, "_blank");
-      });
-    }
+        // Stop Number: Render "STOP #{stop_no}"
+        safeSetText(".data-stop-number", matchingStop?.stop_no ? `STOP #${matchingStop.stop_no}` : "STOP #N/A");
 
-    // Report Issue Logic
-    const reportBtn = view.querySelector(".report-issue-btn");
-    const reportContainer = view.querySelector(".report-container");
-    if (reportBtn && reportContainer) {
-      reportBtn.addEventListener("click", () => {
-        if (!view.querySelector(".report-issue-textarea")) {
-          const textarea = document.createElement("textarea");
-          textarea.className = "issue-textarea report-issue-textarea";
-          textarea.placeholder = "Describe the issue...";
+        // Name: order?.customer?.user?.name || 'N/A'
+        safeSetText(".data-customer-name", order?.customer?.user?.name || 'N/A');
 
-          const submitBtn = document.createElement("button");
-          submitBtn.className = "button primary submit-issue-btn";
-          submitBtn.innerText = "Submit Report";
+        // Address: order?.Area || 'N/A'
+        safeSetText(".data-address", order?.Area || 'N/A');
 
-          submitBtn.addEventListener("click", () => {
-            alert("Issue reported!");
-            textarea.remove();
-            submitBtn.remove();
-            reportBtn.style.display = "flex";
-          });
+        // Helper to format time strings (e.g., "3.00" -> "3:00")
+        const formatTime = (timeStr) => {
+            if (!timeStr || typeof timeStr !== 'string') return timeStr;
+            return timeStr.replace('.', ':');
+        };
 
-          reportContainer.appendChild(textarea);
-          reportContainer.appendChild(submitBtn);
-          reportBtn.style.display = "none";
+        // Time: Map ETA and format .data-time-window
+        const rawEta = order?.ETA || 'N/A';
+        const formattedEta = formatTime(rawEta);
+        
+        safeSetText(".data-eta", order?.ETA ? `ETA: ${formattedEta}` : 'N/A');
+        
+        const windowEl = rootElement.querySelector(".data-time-window");
+        if (windowEl) {
+            const rawWindow = order?.DeliveryTimeWindow || 'TBD';
+            const formattedWindow = formatTime(rawWindow);
+            windowEl.innerHTML = `${formattedEta} —<br>${formattedWindow}`;
         }
-      });
+
+        // Price: order?.Price
+        safeSetText(".data-payment-amount", order?.Price ? `EGP ${order.Price}` : 'N/A');
+
+        // Phone: order?.customer?.phone_no (with fallback for common alternative paths)
+        safeSetText(".data-phone-number", order?.customer?.phone_no || order?.customer?.user?.phone_no || 'N/A');
+
+        // Instructions: order?.SpecialInstructions
+        safeSetText(".data-special-instructions", order?.SpecialInstructions || 'N/A');
+
+        // 5. COD Logic Bug-Fix
+        const paymentStatusEl = rootElement.querySelector(".data-payment-status");
+        if (paymentStatusEl) {
+            const paymentMethod = order?.Payment_method?.toUpperCase() || "";
+            if (paymentMethod.includes("COD")) {
+                paymentStatusEl.textContent = "COD REQUIRED";
+                // Apply red/danger CSS class
+                paymentStatusEl.className = "label text-danger m-0 data-payment-status";
+            } else {
+                paymentStatusEl.textContent = "PAID";
+                // Apply success CSS class
+                paymentStatusEl.className = "label text-success m-0 data-payment-status";
+            }
+        }
+
+        // 6. Navigation
+        const scanBtn = rootElement.querySelector(".scan-parcel-btn") || rootElement.querySelector(".scan-btn");
+        if (scanBtn) {
+            scanBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                
+                const orderId = order?.OrderID;
+                if (orderId) {
+                    // Save OrderID as expected_order_id for scanning validation
+                    localStorage.setItem("expected_order_id", orderId);
+                    
+                    // SPA Navigation to /scan-qr with query param
+                    const path = `/scan-qr?orderId=${orderId}`;
+                    window.history.pushState({}, "", path);
+                    window.dispatchEvent(new Event("popstate"));
+                } else {
+                    console.error("Cannot navigate: OrderID is missing from the data.");
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error("Critical error in Stop Details View:", error);
     }
-  } catch (error) {
-    console.error("Failed to fetch stop details", error);
-  }
 }
 
+/**
+ * Cleanup logic when navigating away
+ */
 export function unmount() {
-  // Cleanup logic if needed
+    // Shared router handles clearing innerHTML; no custom cleanup required here.
 }

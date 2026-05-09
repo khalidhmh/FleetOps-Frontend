@@ -7,20 +7,32 @@ api.setBaseURL("http://localhost:8000");
 // ─── API Methods ─────────────────────────────────────────────────────────────
 
 /**
- * Fetches a vehicle by its ID from the backend.
+ * Fetches all stops for a given route from the backend.
  *
- * @param {string|number} vehicle_id - The vehicle ID.
- * @returns {Promise<Object>} The vehicle data object.
+ * @param {string|number} routeId - The route ID.
+ * @returns {Promise<Array>} Array of stop objects.
  */
-async function getVehicleById(vehicle_id) {
-  const response = await api.get(`/api/v1/dispatch/vehicles/${vehicle_id}`);
+async function getRouteStops(routeId) {
+  const response = await api.get(`/api/v1/dispatch/routes/${routeId}/stops`);
+  return response.data.data;
+}
+
+/**
+ * Fetches details for a specific stop.
+ *
+ * @param {string|number} stopId - The stop ID.
+ * @returns {Promise<Object>} Stop details object.
+ */
+async function getStopDetails(stopId) {
+  const response = await api.get(`/api/v1/dispatch/stops/${stopId}`);
   return response.data.data;
 }
 
 // ────────────────────────────────────────────────────────────────
 
-const VehiclesStorage = {
-  getVehicleById,
+const RouteStopsAPI = {
+  getRouteStops,
+  getStopDetails,
 };
 
-export default VehiclesStorage;
+export default RouteStopsAPI;

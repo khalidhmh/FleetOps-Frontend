@@ -1,4 +1,4 @@
-import { getDriverPerformance, getAllPerformances } from "../../api/index.js";
+import PerformanceStorage from "../../services/api/performance.js";
 
 export async function mount(rootElement) {
   const view = rootElement || document;
@@ -70,8 +70,8 @@ export async function mount(rootElement) {
   if (driverId) {
     try {
       const [perf, allPerfs] = await Promise.all([
-        getDriverPerformance(driverId),
-        getAllPerformances(),
+        PerformanceStorage.getDriverPerformance(driverId),
+        PerformanceStorage.getAllPerformances(),
       ]);
 
       const calculateScore = (p) =>

@@ -1,28 +1,25 @@
 import api from "/shared/api-handler.js";
-import { drivers } from "../storage/drivers.js";
 
 // ─── Global Setup ─────────────────────────────────────────────────────────────
 
-api.setBaseURL("http://localhost:3000");
+api.setBaseURL("http://localhost:8000");
 
 // ─── API Methods ─────────────────────────────────────────────────────────────
 
-function login(email, password) {
-  const driver = drivers.find(
-    (d) => d.email === email && d.password === password,
-  );
-  if (driver) {
-    return driver;
-  }
-  throw new Error("Invalid email or password");
+async function login(email, password) {
+  const response = await api.post("/api/v1/auth/login", { email, password });
+  return response.data;
 }
 
-function getDriverProfile(id) {
-  const driver = drivers.find((d) => d.id === id);
-  if (driver) {
-    return driver;
-  }
-  throw new Error("Driver not found");
+/**
+ * Fetches a driver/user profile from the backend.
+ *
+ * @param {string|number} id - The user ID.
+ * @returns {Promise<Object>} The user data object.
+ */
+async function getDriverProfile(id) {
+  const response = await api.get(`/api/v1/users/${id}`);
+  return response.data.data;
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -31,5 +28,4 @@ const DriverStorage = {
   getDriverProfile,
 };
 
-export { drivers };
 export default DriverStorage;

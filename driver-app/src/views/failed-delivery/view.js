@@ -1,87 +1,83 @@
+import OrdersAPI from "../../services/api/orders.js";
+import api from "/shared/api-handler.js";
+
 /**
- * Success Notification Logic for Failed Delivery View
- * Implemented as a simple in-app message (toast) created dynamically.
+ * Failed Delivery / Package Exception View Logic
  */
 
-// Inject required styles for the message component
-const injectMessageStyles = () => {
-    if (document.getElementById('ir-message-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'ir-message-styles';
-    style.textContent = `
-        .ir-message {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-floating);
-            z-index: 1000;
-            font-size: var(--font-size-sm);
-            font-weight: 600;
-            white-space: nowrap;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        
-        .ir-message[hidden] {
-            display: none !important;
-            opacity: 0;
-            transform: translate(-50%, 20px);
-        }
+export async function mount(rootElement) {
+    const { getOrdersByRoute } = OrdersAPI;
 
-        .ir-message:not([hidden]) {
-            display: flex !important;
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
-    `;
-    document.head.appendChild(style);
-};
+    // 1. Retrieve state from localStorage
+    const active_stop_id = localStorage.getItem('active_stop_id');
+    const expected_order_id = localStorage.getItem('expected_order_id');
+    const routeId = localStorage.getItem('routeId');
 
-// Create the message element dynamically
-const ensureMessageElement = (container) => {
-    let message = document.querySelector('.ir-toast');
-    if (!message) {
-        message = document.createElement('div');
-        message.className = 'ir-toast ir-message palette-primary';
-        message.setAttribute('hidden', '');
-        message.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            <span>Return protocol initiated successfully</span>
-        `;
-        (container || document.body).appendChild(message);
+    // 2. Data Extraction & DOM Mapping
+    if (routeId && expected_order_id) {
+        try {
+            const { data: orders } = await getOrdersByRoute(routeId);
+            const currentOrder = orders?.find(o => String(o.OrderID) === String(expected_order_id));
+
+            // Locate the header element that displays the Order ID
+            const orderIdHeader = rootElement.querySelector('.stack .helper-text');
+            if (orderIdHeader) {
+                orderIdHeader.textContent = `Order ID: #${currentOrder?.OrderID || 'UNKNOWN'} | RTB Protocol Triggered`;
+            }
+        } catch (error) {
+            console.error("Failed to fetch route orders:", error);
+        }
     }
-    return message;
-};
 
-export function mount(rootElement) {
-    injectMessageStyles();
-    
-    const confirmBtn = document.querySelector('.confirm-btn');
-    const successMessage = ensureMessageElement(rootElement);
+    // 3. Form Handling & Submission
+    const confirmBtn = rootElement.querySelector('.confirm-btn');
+    const notesField = rootElement.querySelector('textarea');
 
-    if (confirmBtn && successMessage) {
-        confirmBtn.addEventListener('click', () => {
-            // Show message
-            successMessage.removeAttribute('hidden');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            const selectedReasonEl = rootElement.querySelector('input[name="reason"]:checked');
+            const selectedReason = selectedReasonEl?.value;
+            const notesValue = notesField?.value || '';
 
-            // Auto-hide after 3 seconds
-            setTimeout(() => {
-                successMessage.setAttribute('hidden', '');
-            }, 3000);
+            // Validation: Ensure a reason is selected
+            if (!selectedReason) {
+                alert("Please select a reason for the failed delivery.");
+                return;
+            }
+
+            // UI State: Loading
+            const originalBtnContent = confirmBtn.innerHTML;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = "Processing...";
+
+            try {
+                // PATCH request to update stop status
+                const payload = {
+                    status: "failed",
+                    exception_reason: selectedReason,
+                    notes: notesValue
+                };
+
+                const { status } = await api.patch(`/api/v1/dispatch/stops/${active_stop_id}/status`, payload);
+
+                // Success Navigation
+                if (status === 200 || status === 204) {
+                    window.location.href = '/active-route';
+                } else {
+                    throw new Error(`Unexpected status code: ${status}`);
+                }
+            } catch (error) {
+                console.error("Status update failed:", error);
+                alert("Failed to confirm delivery failure. Please check your connection and try again.");
+                
+                // Revert button state
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = originalBtnContent;
+            }
         });
     }
 }
 
 export function unmount() {
-    const message = document.querySelector('.ir-toast');
-    if (message) message.remove();
+    // Cleanup if necessary
 }

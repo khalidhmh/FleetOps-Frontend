@@ -1,104 +1,135 @@
-import { getDriverRoutes } from "../../api/index.js";
+import OrdersAPI from "../../services/api/orders.js";
+import RouteStopsAPI from "../../services/api/route-stops.js";
 
-const QR_STORAGE_KEY = "fleetops_qr_scan_state_";
-const SIGNATURE_STORAGE_KEY = "fleetops_signature_state_";
-
-function clearStopSessionData(stopId) {
-  if (stopId) {
-    localStorage.removeItem(QR_STORAGE_KEY + stopId);
-    localStorage.removeItem(SIGNATURE_STORAGE_KEY + stopId);
-  }
-}
-
-function navigateTo(path) {
-  window.history.pushState({}, "", path);
-  window.dispatchEvent(new Event("popstate"));
-}
-
+/**
+ * Delivery Complete View Module
+ * Senior Frontend Implementation
+ */
 export async function mount(rootElement) {
-  const view = rootElement || document;
+  if (!rootElement) return;
 
-  const recipientEl = view.querySelector(".data-recipient");
-  const progressEl = view.querySelector(".data-current-stop");
-  const totalStopsEl = view.querySelector(".data-total-stops");
-  const stopsLeftEl = view.querySelector(".data-stops-left");
-  const cashAmountEl = view.querySelector(".data-cash-amount");
-  const cashCardEl = view.querySelector(".cash-collected-card");
+  // 1. State Retrieval & Debugging
+  const routeId =
+    localStorage.getItem("route_id") ||
+    localStorage.getItem("routeId") ||
+    localStorage.getItem("activeRouteId") ||
+    "4";
+  const expectedOrderId = localStorage.getItem("expected_order_id") || "1000";
+  const currentStopId =
+    localStorage.getItem("current_stop_id") ||
+    localStorage.getItem("currentStopId") ||
+    "20005";
 
-  let driverId = localStorage.getItem("driver_id");
-  let stopId = localStorage.getItem("current_stop_id");
-  let activeRoute = null;
-  let stop = null;
+  console.log("[DeliveryConfirm] Debug Context:", {
+    routeId,
+    expectedOrderId,
+    currentStopId,
+  });
+
+  // UI Element Selectors
+  const recipientEl = rootElement.querySelector(".data-recipient");
+  const currentStopEl = rootElement.querySelector(".data-current-stop");
+  const totalStopsEl = rootElement.querySelector(".data-total-stops");
+  const stopsLeftEl = rootElement.querySelector(".data-stops-left");
+  const cashAmountEl = rootElement.querySelector(".data-cash-amount");
+  const cashCard = rootElement.querySelector(".cash-collected-card");
+
+  const continueBtn = rootElement.querySelector(".continue-btn");
+  const viewRouteBtn = rootElement.querySelector(".view-route-btn");
 
   try {
-    if (!driverId) {
-      console.warn(
-        "No driver_id found in localStorage. Falling back to driver_1 for testing.",
-      );
-      driverId = "driver_1";
-    }
+    if (!routeId) throw new Error("Missing Route ID in storage.");
 
-    if (driverId) {
-      const routes = await getDriverRoutes(driverId);
-      activeRoute = routes.find((r) => r.status === "active");
-      if (activeRoute) {
-        if (stopId) {
-          stop = activeRoute.stops.find((s) => s.stop_id === stopId);
-        }
-        if (!stop) {
-          // Fallback to first stop if invalid ID
-          stop = activeRoute.stops[0];
-          if (stop) {
-            stopId = stop.stop_id;
-            localStorage.setItem("current_stop_id", stopId);
-          }
-        }
-      }
-    }
+    // 2. Fetch Data in Parallel
+    const [stopsData, ordersResponse] = await Promise.all([
+      RouteStopsAPI.getRouteStops(routeId),
+      OrdersAPI.getOrdersByRoute(routeId),
+    ]);
 
-    if (stop && activeRoute) {
-      const totalStops = activeRoute.stops.length;
-      const stopsLeft = totalStops - stop.stop_number;
+    // RouteStopsAPI.getRouteStops already returns .data.data
+    const stops = stopsData || [];
+    // OrdersAPI returns the full response object
+    const orders = ordersResponse?.data?.data || ordersResponse?.data || [];
 
-      if (recipientEl) recipientEl.textContent = stop.customer_name;
-      if (progressEl) progressEl.textContent = `stop ${stop.stop_number}`;
-      if (totalStopsEl) totalStopsEl.textContent = `of ${totalStops}`;
-      if (stopsLeftEl) stopsLeftEl.textContent = stopsLeft.toString();
-
-      if (cashCardEl) {
-        if (stop.payment.cod_required) {
-          cashCardEl.style.display = "flex";
-          if (cashAmountEl)
-            cashAmountEl.textContent = `${stop.payment.currency} ${stop.payment.amount.toFixed(2)}`;
-        } else {
-          cashCardEl.style.display = "none";
-        }
-      }
-    }
-  } catch (err) {
-    console.error("Failed to fetch route data for delivery confirm:", err);
-  }
-
-  // ── Continue to Next Stop ──────────────────
-  const continueBtn = view.querySelector(".continue-btn");
-  if (continueBtn) {
-    continueBtn.addEventListener("click", () => {
-      if (stopId) {
-        clearStopSessionData(stopId);
-      }
-      navigateTo("/active-route-page");
+    console.log("[DeliveryConfirm] API Responses:", {
+      stopsCount: stops.length,
+      ordersCount: orders.length,
     });
+
+    // 3. Find Delivered Context with flexible matching
+    const currentStop = stops.find(
+      (s) => String(s.stop_id) === String(currentStopId),
+    );
+
+    // Match order by OrderID or order_id
+    const order = orders.find(
+      (o) =>
+        String(o?.OrderID || o?.order_id) === String(expectedOrderId) ||
+        o?.route_stops?.some(
+          (rs) => String(rs.stop_id) === String(currentStopId),
+        ),
+    );
+
+    console.log("[DeliveryConfirm] Matched Objects:", {
+      hasStop: !!currentStop,
+      hasOrder: !!order,
+    });
+
+    // 4. Calculations
+    const totalStops = stops.length || orders.length || 0;
+    const currentStopNo =
+      currentStop?.stop_no ||
+      order?.route_stops?.[0]?.stop_no ||
+      stops.indexOf(currentStop) + 1 ||
+      1;
+    const remainingStops = Math.max(0, totalStops - currentStopNo);
+
+    // 5. DOM Mapping
+    if (recipientEl) {
+      recipientEl.textContent =
+        order?.customer?.user?.name || order?.customer?.name || "Recipient";
+    }
+
+    if (currentStopEl) {
+      currentStopEl.textContent = `Stop ${currentStopNo}`;
+    }
+    if (totalStopsEl) {
+      totalStopsEl.textContent = ` of ${totalStops}`;
+    }
+
+    if (stopsLeftEl) {
+      stopsLeftEl.textContent = remainingStops;
+    }
+
+    // Conditional Cash Collected
+    const paymentMethod = (
+      order?.Payment_method ||
+      order?.payment_method ||
+      ""
+    ).toUpperCase();
+    if (paymentMethod.includes("COD")) {
+      if (cashCard) cashCard.style.display = "flex";
+      if (cashAmountEl) {
+        const price = order?.Price || order?.price || "0.00";
+        cashAmountEl.textContent = `EGP ${price}`;
+      }
+    } else {
+      if (cashCard) cashCard.style.display = "none";
+    }
+  } catch (error) {
+    console.error("[DeliveryConfirm] CRITICAL ERROR:", error);
+    // Fallback for UI if something went wrong
+    if (recipientEl) recipientEl.textContent = "Delivery Confirmed";
   }
 
-  // ── View Route ─────────────────────────────
-  const viewRouteBtn = view.querySelector(".view-route-btn");
-  if (viewRouteBtn) {
-    viewRouteBtn.addEventListener("click", () => {
-      navigateTo("/active-route-page");
-    });
-  }
+  // 6. Navigation Actions
+  const goHome = () => {
+    window.history.pushState({}, "", "/active-route-page");
+    window.dispatchEvent(new Event("popstate"));
+  };
+
+  if (continueBtn) continueBtn.addEventListener("click", goHome);
+  if (viewRouteBtn) viewRouteBtn.addEventListener("click", goHome);
 }
 
-export function unmount() {
-  // No persistent listeners to clean up
-}
+export function unmount() {}

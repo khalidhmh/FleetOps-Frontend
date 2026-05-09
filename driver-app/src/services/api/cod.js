@@ -6,21 +6,14 @@ api.setBaseURL("http://localhost:8000");
 
 // ─── API Methods ─────────────────────────────────────────────────────────────
 
-/**
- * Fetches a vehicle by its ID from the backend.
- *
- * @param {string|number} vehicle_id - The vehicle ID.
- * @returns {Promise<Object>} The vehicle data object.
- */
-async function getVehicleById(vehicle_id) {
-  const response = await api.get(`/api/v1/dispatch/vehicles/${vehicle_id}`);
+async function getReconciliationSummary(routeId) {
+  const response = await api.get(`/api/v1/analytics/reconciliation/summary/${routeId}`);
   return response.data.data;
 }
 
 // ────────────────────────────────────────────────────────────────
-
-const VehiclesStorage = {
-  getVehicleById,
+const CodStorage = {
+  getReconciliationSummary,
 };
 
-export default VehiclesStorage;
+export default CodStorage;

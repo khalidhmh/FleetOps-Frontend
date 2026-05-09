@@ -1,26 +1,23 @@
 import api from "/shared/api-handler.js";
 
 // ─── Global Setup ─────────────────────────────────────────────────────────────
-
 api.setBaseURL("http://localhost:8000");
 
 // ─── API Methods ─────────────────────────────────────────────────────────────
 
 /**
- * Fetches a vehicle by its ID from the backend.
- *
- * @param {string|number} vehicle_id - The vehicle ID.
- * @returns {Promise<Object>} The vehicle data object.
+ * Submit a new incident report
+ * @param {Object} payload 
+ * @returns {Promise<Object>}
  */
-async function getVehicleById(vehicle_id) {
-  const response = await api.get(`/api/v1/dispatch/vehicles/${vehicle_id}`);
-  return response.data.data;
+async function submitIncidentReport(payload) {
+    const response = await api.post("/api/v1/analytics/reports/incidents-reports", payload);
+    return response.data;
 }
 
 // ────────────────────────────────────────────────────────────────
-
-const VehiclesStorage = {
-  getVehicleById,
+const IncidentStorage = {
+    submitIncidentReport,
 };
 
-export default VehiclesStorage;
+export default IncidentStorage;

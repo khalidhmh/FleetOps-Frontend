@@ -1,105 +1,34 @@
-import { getDriverRoutes, markStopDelivered } from "../../api/index.js";
-
-const SIGNATURE_STORAGE_KEY = "fleetops_signature_state_";
+import OrdersAPI from "../../services/api/orders.js";
 
 /**
- * Persists signature state to localStorage.
- */
-function saveSignatureState(stopId, name, signatureData) {
-  localStorage.setItem(
-    SIGNATURE_STORAGE_KEY + stopId,
-    JSON.stringify({ name, signatureData }),
-  );
-}
-
-/**
- * Loads signature state from localStorage.
- */
-function loadSignatureState(stopId) {
-  try {
-    const saved = localStorage.getItem(SIGNATURE_STORAGE_KEY + stopId);
-    return saved ? JSON.parse(saved) : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * MOUNT: Initializes the signature view logic.
+ * Digital Signature View Module
+ * Senior Frontend Implementation with Canvas POD logic.
  */
 export async function mount(rootElement) {
   const view = rootElement || document;
-  const canvas = view.querySelector(".signature-pad");
-  const clearBtn = view.querySelector(".clear-btn");
-  const placeholder = view.querySelector(".canvas-placeholder");
-  const backBtn = view.querySelector(".back-btn");
-  const nameInput = view.querySelector(".customer-name");
-  const confirmBtn = view.querySelector(".confirm-btn");
-  const timestampEl = view.querySelector(".current-timestamp");
 
+  // UI Element Selectors
   const jobIdEl = view.querySelector(".data-job-id");
   const geolocationEl = view.querySelector(".data-geolocation");
+  const timestampEl = view.querySelector(".current-timestamp");
+  const backBtn = view.querySelector(".back-btn");
+  const canvas = view.querySelector(".signature-pad");
+  const clearBtn = view.querySelector(".clear-btn");
+  const nameInput = view.querySelector(".customer-name");
+  const confirmBtn = view.querySelector(".confirm-btn");
 
-  if (!canvas || !clearBtn || !nameInput || !confirmBtn) return;
-
-  const ctx = canvas.getContext("2d");
+  // State Variables
   let isDrawing = false;
-  let hasSignature = false;
+  let isCanvasEmpty = true;
+  let currentCoords = { lat: 0, lng: 0 };
+  const routeId =
+    localStorage.getItem("route_id") || localStorage.getItem("routeId") || "4";
+  const expectedOrderId = localStorage.getItem("expected_order_id") || "1006";
+  const driverId = localStorage.getItem("driver_id") || 5;
 
-  let stopId = localStorage.getItem("current_stop_id");
-  let routeId = null;
-  let stop = null;
+  // 1. Initial State Mapping (Job ID & Timestamp)
+  if (jobIdEl) jobIdEl.textContent = `JOB #${expectedOrderId}`;
 
-  // --- Hydration ---
-  try {
-    let driverId = localStorage.getItem("driver_id");
-    if (!driverId) {
-      console.warn(
-        "No driver_id found in localStorage. Falling back to driver_1 for testing.",
-      );
-      driverId = "driver_1";
-    }
-
-    if (driverId) {
-      const routes = await getDriverRoutes(driverId);
-      const activeRoute = routes.find((r) => r.status === "active");
-      if (activeRoute) {
-        routeId = activeRoute.route_id;
-
-        if (stopId) {
-          stop = activeRoute.stops.find((s) => s.stop_id === stopId);
-        }
-        if (!stop) {
-          stop =
-            activeRoute.stops.find((s) => s.status === "pending") ||
-            activeRoute.stops[0];
-          if (stop) {
-            stopId = stop.stop_id;
-            localStorage.setItem("current_stop_id", stopId);
-          }
-        }
-      }
-    }
-
-    if (stop && routeId) {
-      if (jobIdEl) jobIdEl.textContent = `JOB #${routeId}`;
-      if (geolocationEl) {
-        geolocationEl.innerHTML = `<strong>${Math.abs(stop.coords.lat)}&deg; ${stop.coords.lat >= 0 ? "N" : "S"},<br>${Math.abs(stop.coords.lng)}&deg; ${stop.coords.lng >= 0 ? "E" : "W"}</strong>`;
-      }
-    }
-  } catch (err) {
-    console.error("Failed to hydrate signature view:", err);
-  }
-
-  // ── Navigation ─────────────────────────────
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      window.history.pushState({}, "", "/qr-scan-page");
-      window.dispatchEvent(new Event("popstate"));
-    });
-  }
-
-  // ── Timestamp ─────────────────────────────
   if (timestampEl) {
     const now = new Date();
     const months = [
@@ -116,169 +45,158 @@ export async function mount(rootElement) {
       "NOV",
       "DEC",
     ];
-    const month = months[now.getMonth()];
-    const date = now.getDate();
-    const year = now.getFullYear();
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    timestampEl.innerHTML = `${month} ${date}, ${year} -<br>${hours}:${minutes}`;
+    timestampEl.innerHTML = `<strong>${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} -<br>${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}</strong>`;
   }
 
-  // ── Signature Logic ────────────────────────
-  function resizeCanvas() {
-    const data = canvas.toDataURL();
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = 180;
+  // 2. Geolocation Fetching
+  if (geolocationEl) {
+    geolocationEl.textContent = "Loading stop location...";
+    try {
+      const currentStopId =
+        localStorage.getItem("current_stop_id") ||
+        localStorage.getItem("currentStopId");
+      const response = await OrdersAPI.getOrdersByRoute(routeId);
+      const orders = response?.data?.data || [];
+      const order = orders.find(
+        (o) => String(o?.OrderID || o?.order_id) === String(expectedOrderId),
+      );
+      const stop = order?.route_stops?.find(
+        (rs) => String(rs.stop_id) === String(currentStopId),
+      );
 
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = "#212121";
+      // Map coordinates for UI and Payload
+      currentCoords.lat = stop?.latitude || order?.latitude || 34.3252;
+      currentCoords.lng = stop?.longitude || order?.longitude || 23.2554;
 
-    if (hasSignature || loadSignatureState(stopId)?.signatureData) {
-      const img = new Image();
-      const saved = loadSignatureState(stopId);
-      img.src = data.length > 1000 ? data : saved ? saved.signatureData : "";
-      if (img.src) {
-        img.onload = () => ctx.drawImage(img, 0, 0);
-      }
-      if (placeholder) placeholder.style.display = "none";
+      const latDir = currentCoords.lat >= 0 ? "N" : "S";
+      const lngDir = currentCoords.lng >= 0 ? "E" : "W";
+      geolocationEl.innerHTML = `<strong>${Math.abs(currentCoords.lat).toFixed(4)}&deg; ${latDir},<br>${Math.abs(currentCoords.lng).toFixed(4)}&deg; ${lngDir}</strong>`;
+    } catch (error) {
+      console.error("Geolocation fetch error:", error);
+      geolocationEl.textContent = "Location unavailable";
     }
   }
 
-  window.addEventListener("resize", resizeCanvas);
-  setTimeout(resizeCanvas, 0); // Ensure layout is settled
+  // 3. Canvas Logic (Mobile-Ready Signature Pad)
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
 
-  function getCoordinates(e) {
-    const rect = canvas.getBoundingClientRect();
-    let clientX = e.clientX;
-    let clientY = e.clientY;
-    if (e.touches && e.touches.length > 0) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    }
-    return { x: clientX - rect.left, y: clientY - rect.top };
-  }
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#212121";
+    };
 
-  function startDrawing(e) {
-    if (e.type === "touchstart") e.preventDefault();
-    isDrawing = true;
-    const coords = getCoordinates(e);
-    ctx.beginPath();
-    ctx.moveTo(coords.x, coords.y);
+    const getXY = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    };
 
-    if (!hasSignature) {
-      hasSignature = true;
-      canvas.dataset.hasSignature = "true";
-      checkValidity();
-      if (placeholder) placeholder.style.display = "none";
-    }
-  }
+    const startDrawing = (e) => {
+      isDrawing = true;
+      isCanvasEmpty = false;
+      validateForm();
+      const { x, y } = getXY(e);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      if (e.type === "touchstart") e.preventDefault();
+    };
 
-  function draw(e) {
-    if (!isDrawing) return;
-    if (e.type === "touchmove") e.preventDefault();
-    const coords = getCoordinates(e);
-    ctx.lineTo(coords.x, coords.y);
-    ctx.stroke();
-  }
+    const draw = (e) => {
+      if (!isDrawing) return;
+      const { x, y } = getXY(e);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      if (e.type === "touchmove") e.preventDefault();
+    };
 
-  function stopDrawing() {
-    if (isDrawing) {
-      ctx.closePath();
+    const stopDrawing = () => {
       isDrawing = false;
-      saveSignatureState(stopId, nameInput.value, canvas.toDataURL());
+      ctx.closePath();
+    };
+
+    // Event Listeners for Mouse and Touch
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    window.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("touchstart", startDrawing, { passive: false });
+    canvas.addEventListener("touchmove", draw, { passive: false });
+    window.addEventListener("touchend", stopDrawing);
+
+    // Clear Button Logic
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        isCanvasEmpty = true;
+        validateForm();
+      });
     }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
   }
 
-  canvas.addEventListener("mousedown", startDrawing);
-  canvas.addEventListener("mousemove", draw);
-  window.addEventListener("mouseup", stopDrawing);
-  canvas.addEventListener("touchstart", startDrawing, { passive: false });
-  canvas.addEventListener("touchmove", draw, { passive: false });
-  window.addEventListener("touchend", stopDrawing);
+  // 4. Form Validation & Submission
+  const validateForm = () => {
+    const isNameValid = nameInput?.value?.trim() !== "";
+    if (confirmBtn) confirmBtn.disabled = !(isNameValid && !isCanvasEmpty);
+  };
 
-  clearBtn.addEventListener("click", () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    hasSignature = false;
-    canvas.dataset.hasSignature = "false";
-    checkValidity();
-    if (placeholder) placeholder.style.display = "flex";
-    saveSignatureState(stopId, nameInput.value, null);
-  });
-
-  // ── Validation Logic ───────────────────────
-  function checkValidity() {
-    const hasName = nameInput.value.trim().length > 0;
-    const isSigned = canvas.dataset.hasSignature === "true";
-    if (hasName && isSigned) {
-      confirmBtn.removeAttribute("disabled");
-    } else {
-      confirmBtn.setAttribute("disabled", "true");
-    }
+  if (nameInput) {
+    nameInput.addEventListener("input", validateForm);
   }
 
-  nameInput.addEventListener("input", () => {
-    checkValidity();
-    const sig =
-      canvas.dataset.hasSignature === "true" ? canvas.toDataURL() : null;
-    saveSignatureState(stopId, nameInput.value, sig);
-  });
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", async () => {
+      if (confirmBtn.disabled) return;
 
-  confirmBtn.addEventListener("click", async () => {
-    if (!confirmBtn.hasAttribute("disabled")) {
-      // Officially mark stop as delivered in the API
-      if (routeId && stopId) {
-        try {
-          // Capture the canvas content
-          const base64Sig = canvas.toDataURL("image/png");
+      const originalBtnText = confirmBtn.innerHTML;
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = "SAVING...";
 
-          // Load the crypto module and encrypt
-          const { generateMockKey, encryptSignature } =
-            await import("../../api/crypto.js");
-          const key = await generateMockKey();
-          const encryptedPayload = await encryptSignature(base64Sig, key);
+      const payload = {
+        driver_id: parseInt(driverId),
+        lat: parseFloat(currentCoords.lat),
+        lng: parseFloat(currentCoords.lng),
+        signature: canvas.toDataURL("image/png"),
+        photo: "", // Placeholder
+        customer_name: nameInput.value.trim(),
+        customer_signed: !isCanvasEmpty,
+        is_safe_drop: false,
+      };
 
-          // Update the mock data
-          await markStopDelivered(routeId, stopId, encryptedPayload);
-        } catch (e) {
-          console.error("Failed to mark stop as delivered", e);
+      try {
+        const response = await OrdersAPI.savePOD(expectedOrderId, payload);
+        if (response?.data?.success) {
+          // Navigate on Success
+          window.history.pushState({}, "", "/delivery-confirm-page");
+          window.dispatchEvent(new Event("popstate"));
+        } else {
+          throw new Error(response?.data?.message || "Submission failed");
         }
+      } catch (error) {
+        console.error("POD Submission Error:", error);
+        alert("Failed to save delivery proof. Please try again.");
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalBtnText;
       }
-
-      window.history.pushState({}, "", "/delivery-confirm-page");
-      window.dispatchEvent(new Event("popstate"));
-    }
-  });
-
-  // Initial load
-  const savedState = loadSignatureState(stopId);
-  if (savedState) {
-    if (savedState.name) nameInput.value = savedState.name;
-    if (savedState.signatureData) {
-      hasSignature = true;
-      canvas.dataset.hasSignature = "true";
-      // resizeCanvas will handle drawing the image
-    }
-  } else if (stop) {
-    // Prefill with customer name if no saved state
-    nameInput.value = stop.customer_name;
+    });
   }
-  checkValidity();
 
-  // Cleanup reference for unmount
-  view._signatureResizeHandler = resizeCanvas;
-  view._signatureMouseUpHandler = stopDrawing;
-  view._signatureTouchEndHandler = stopDrawing;
+  // Navigation back
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      window.history.pushState({}, "", "/qr-scan-page");
+      window.dispatchEvent(new Event("popstate"));
+    });
+  }
 }
 
-/**
- * UNMOUNT: Cleans up listeners.
- */
-export function unmount(rootElement) {
-  const view = rootElement || document;
-  window.removeEventListener("resize", view._signatureResizeHandler);
-  window.removeEventListener("mouseup", view._signatureMouseUpHandler);
-  window.removeEventListener("touchend", view._signatureTouchEndHandler);
+export function unmount() {
+  // Cleanup global listeners if necessary
 }

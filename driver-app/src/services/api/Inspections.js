@@ -7,20 +7,19 @@ api.setBaseURL("http://localhost:8000");
 // ─── API Methods ─────────────────────────────────────────────────────────────
 
 /**
- * Fetches a vehicle by its ID from the backend.
+ * Submits a pre-trip inspection record to the backend.
  *
- * @param {string|number} vehicle_id - The vehicle ID.
- * @returns {Promise<Object>} The vehicle data object.
+ * @param {Object} payload - The inspection data matching the backend contract.
+ * @returns {Promise<Object>} The API response data.
  */
-async function getVehicleById(vehicle_id) {
-  const response = await api.get(`/api/v1/dispatch/vehicles/${vehicle_id}`);
-  return response.data.data;
+async function submitInspection(payload) {
+  const response = await api.post("/api/v1/orders/inspections", payload);
+  return response.data;
 }
 
 // ────────────────────────────────────────────────────────────────
-
-const VehiclesStorage = {
-  getVehicleById,
+const InspectionsAPI = {
+  submitInspection,
 };
 
-export default VehiclesStorage;
+export default InspectionsAPI;
