@@ -1,11 +1,24 @@
 import api from "/shared/api-handler.js";
-import {
-    ROUTE_DATE_OPTIONS,
-    ROUTE_SHIFT_OPTIONS,
-    ROUTE_STATUS_OPTIONS,
-} from "../storage/routes.js";
 
 const API_BASE = "http://localhost:8000";
+const ROUTE_DATE_OPTIONS = ["All Dates", "Today", "Tomorrow", "This Week"];
+const ROUTE_SHIFT_OPTIONS = [
+    "All Shifts",
+    "Morning",
+    "Afternoon",
+    "Evening",
+    "Night",
+];
+const ROUTE_STATUS_OPTIONS = [
+    "All",
+    "Planned",
+    "Pending",
+    "Active",
+    "In Transit",
+    "InProgress",
+    "Completed",
+    "Cancelled",
+];
 
 async function getRoutes() {
     try {
@@ -160,18 +173,22 @@ function getOverviewStats(routes) {
 
 async function createRoute(payload) {
     try {
+        const orderIds = String(payload.orderIds || "")
+            .split(",")
+            .map((value) => Number(value.trim()))
+            .filter(Number.isFinite);
+
         const backendPayload = {
-            route_name: `Route ${new Date().toLocaleTimeString()}`,
-            driver_id: 5, // Mock driver ID for now, since UI doesn't have ID dropdown
-            vehicle_id: 1, // Mock vehicle ID
-            scheduled_start_time: new Date().toISOString(),
+            route_name: payload.routeName?.trim() || `Route ${new Date().toLocaleTimeString()}`,
+            driver_id: Number(payload.driverId),
+            vehicle_id: Number(payload.vehicleNumericId),
+            scheduled_start_time: payload.scheduledStartTime || new Date().toISOString(),
             status: "Planned",
-            stops: [
-                {
-                    order_id: 1, // Need real order ID
-                    scheduled_arrival_time: new Date().toISOString()
-                }
-            ]
+            stops: orderIds.map((orderId, index) => ({
+                order_id: orderId,
+                stop_no: index + 1,
+                eta: payload.scheduledStartTime || new Date().toISOString(),
+            })),
         };
         const response = await api.post(`${API_BASE}/api/v1/dispatch/routes`, backendPayload);
         if (response.data && response.data.success) {
@@ -184,46 +201,12 @@ async function createRoute(payload) {
     }
 }
 
-// Cairo center + spread stops around it in a deterministic pattern
-const CAIRO_LAT = 30.0444;
-const CAIRO_LNG = 31.2357;
-
-// Generates a stable lat/lng for a stop when the DB has no GPS data.
-// Uses sine/cosine spread around Cairo so stops form a visible circuit.
-function stubStopCoords(routeId, stopIndex) {
-    const angle = (stopIndex / 8) * 2 * Math.PI; // spread over 360°
-    const radius = 0.025 + (routeId % 5) * 0.005; // 2.5–5km spread
-    return {
-        lat: CAIRO_LAT + Math.sin(angle) * radius,
-        lng: CAIRO_LNG + Math.cos(angle) * radius,
-    };
-}
-
 function createInitials(name) {
     const tokens = (name || "UR")
         .split(" ")
         .filter(Boolean)
         .slice(0, 2);
     return tokens.map((token) => token[0]?.toUpperCase() ?? "").join("") || "UR";
-}
-
-function createFallbackStops(routeId, count, status) {
-    const stopCount = Math.max(Number(count) || 0, 1);
-
-    return Array.from({ length: stopCount }, (_, index) => {
-        const coords = stubStopCoords(routeId, index);
-        return {
-            index: index + 1,
-            customer: `Route point ${index + 1}`,
-            address: "Greater Cairo route area",
-            orderId: "--",
-            planned: "--",
-            actual: "--",
-            delivered: status === "Completed",
-            lat: coords.lat,
-            lng: coords.lng,
-        };
-    });
 }
 
 function mapBackendRouteToFrontend(dbRoute) {
@@ -233,7 +216,6 @@ function mapBackendRouteToFrontend(dbRoute) {
     const mappedStops = (dbRoute.stops || []).map((stop, index) => {
         const dbLat = stop.latitude != null ? Number(stop.latitude) : null;
         const dbLng = stop.longitude != null ? Number(stop.longitude) : null;
-        const stub  = (!dbLat || !dbLng) ? stubStopCoords(routeNumericId, index) : null;
         return {
             index: stop.stop_no || index + 1,
             customer: stop.order?.customer?.user?.name || "Unknown Customer",
@@ -242,14 +224,12 @@ function mapBackendRouteToFrontend(dbRoute) {
             planned: stop.eta ? new Date(stop.eta).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "--",
             actual: stop.actual_arrival_time ? new Date(stop.actual_arrival_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "--",
             delivered: stop.status === "Completed",
-            lat: dbLat || stub.lat,
-            lng: dbLng || stub.lng,
+            lat: dbLat,
+            lng: dbLng,
         };
     });
 
-    const stops = mappedStops.length > 0
-        ? mappedStops
-        : createFallbackStops(routeNumericId, totalStops, dbRoute.status);
+    const stops = mappedStops;
     const displayTotalStops = Math.max(totalStops, stops.length);
     const completedStops = dbRoute.status === "Completed"
         ? displayTotalStops
@@ -269,7 +249,7 @@ function mapBackendRouteToFrontend(dbRoute) {
         driverName: dbRoute.driver?.user?.name || "Unassigned Driver",
         driverInitials: createInitials(dbRoute.driver?.user?.name),
         vehicleNumericId: dbRoute.vehicle_id,
-        vehicleId: dbRoute.vehicle?.VehicleLicense || `TRK-${dbRoute.vehicle_id || "000"}`,
+        vehicleId: dbRoute.vehicle?.VehicleLicense || "--",
         vehicleType: dbRoute.vehicle?.VehicleType || "Unknown",
         status: dbRoute.status || "Pending",
         shift: "All Shifts",
@@ -292,12 +272,12 @@ function mapBackendRouteToFrontend(dbRoute) {
         gpsTrail: [],
         eventLog: [{ title: `Route ${dbRoute.status}`, time: dbRoute.created_at ? new Date(dbRoute.created_at).toLocaleTimeString() : "--" }],
         stops,
-        stopsSource: mappedStops.length > 0 ? "route_stops" : "fallback",
+        stopsSource: mappedStops.length > 0 ? "route_stops" : "none",
     };
 }
 
 async function attachOrderCoordinates(route) {
-    if (!route || route.stopsSource !== "fallback") {
+    if (!route || route.stopsSource !== "none") {
         return route;
     }
 

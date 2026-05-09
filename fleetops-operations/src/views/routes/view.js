@@ -809,54 +809,24 @@ function renderNewRouteModal() {
                     <form class="routes-form" id="new-route-form">
                         <div class="routes-form-grid">
                             <label>
-                                <span class="label">Driver Name</span>
-                                <input name="driverName" required />
+                                <span class="label">Route Name</span>
+                                <input name="routeName" required />
+                            </label>
+                            <label>
+                                <span class="label">Driver ID</span>
+                                <input name="driverId" type="number" min="1" required />
                             </label>
                             <label>
                                 <span class="label">Vehicle ID</span>
-                                <input name="vehicleId" required />
+                                <input name="vehicleNumericId" type="number" min="1" required />
                             </label>
                             <label>
-                                <span class="label">Vehicle Type</span>
-                                <input name="vehicleType" value="Light" required />
-                            </label>
-                            <label>
-                                <span class="label">Shift</span>
-                                <select name="shift">
-                                    ${RoutesApi.getShiftOptions()
-                                        .filter((option) => option !== "All Shifts")
-                                        .map((option) => `<option value="${option}">${option}</option>`)
-                                        .join("")}
-                                </select>
-                            </label>
-                            <label>
-                                <span class="label">Total Stops</span>
-                                <input name="totalStops" type="number" min="1" value="8" required />
-                            </label>
-                            <label>
-                                <span class="label">Distance (km)</span>
-                                <input name="distanceKm" type="number" min="1" value="40" required />
-                            </label>
-                            <label>
-                                <span class="label">Total Weight (kg)</span>
-                                <input name="totalWeightKg" type="number" min="1" value="250" required />
-                            </label>
-                            <label>
-                                <span class="label">Total Volume (m3)</span>
-                                <input name="totalVolumeM3" type="number" min="0.1" step="0.1" value="5.5" required />
+                                <span class="label">Scheduled Start</span>
+                                <input name="scheduledStartTime" type="datetime-local" required />
                             </label>
                             <label class="full">
-                                <span class="label">Zone / Area</span>
-                                <input name="zone" placeholder="Greater Cairo Cluster" required />
-                            </label>
-                            <label class="full">
-                                <span class="label">Date</span>
-                                <select name="date">
-                                    ${RoutesApi.getDateOptions()
-                                        .filter((option) => option !== "All Dates")
-                                        .map((option) => `<option value="${option}">${option}</option>`)
-                                        .join("")}
-                                </select>
+                                <span class="label">Order IDs</span>
+                                <input name="orderIds" placeholder="1001,1002,1003" required />
                             </label>
                         </div>
                         <div class="routes-form-actions">

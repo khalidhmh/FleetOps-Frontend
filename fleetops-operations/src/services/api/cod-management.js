@@ -1,10 +1,8 @@
 import api from "/shared/api-handler.js";
-import {
-    COD_COLLECTION_FILTERS,
-    COD_HANDOVER_FILTERS,
-} from "../storage/cod-management.js";
 
 const API_BASE = "http://localhost:8000/api/v1";
+const COD_COLLECTION_FILTERS = ["All", "Pending", "Collected", "Failed"];
+const COD_HANDOVER_FILTERS = ["All", "Handed Over", "Not Handed Over"];
 
 async function getRecords() {
     try {
