@@ -294,12 +294,6 @@ async function pushAllRoutesToBackend() {
 function buildRoutePayloads(state) {
     return state.clusters.map((cluster) => {
         const rc = state.routeConfigs[cluster.zone] || {};
-        const ordersById = new Map(
-            (cluster.orders || []).map((order) => [
-                String(order.OrderID ?? order.id),
-                order,
-            ]),
-        );
         const driver = (state.drivers || []).find((d) => d.name === rc.driver);
         const vehicle = (state.vehicles || []).find(
             (v) => v.plate === rc.vehicle,
@@ -326,25 +320,14 @@ function buildRoutePayloads(state) {
         }
 
         const stops = (rc.optimizedStops || [])
-            .map((stop, index) => {
-                const orderId = Number(stop.orderId);
-                const sourceOrder = ordersById.get(String(stop.orderId)) || {};
-                const coords = resolveStopCoords(stop, sourceOrder, index);
-
-                return {
-                    order_id: orderId,
-                    stop_no: Number(stop.num || index + 1),
-                    eta: toIsoDateTime(stop.eta) || startDate,
-                    latitude: coords.lat,
-                    longitude: coords.lng,
-                };
-            })
-            .filter(
-                (stop) =>
-                    Number.isFinite(stop.order_id) &&
-                    Number.isFinite(stop.latitude) &&
-                    Number.isFinite(stop.longitude),
-            );
+            .map((stop, index) => ({
+                order_id: Number(stop.orderId),
+                stop_no: Number(stop.num || index + 1),
+                eta: toIsoDateTime(stop.eta) || startDate,
+                latitude: Number(stop.latitude),
+                longitude: Number(stop.longitude),
+            }))
+            .filter((stop) => Number.isFinite(stop.order_id));
 
         if (!stops.length) {
             throw new Error(`Route "${cluster.zone}" has no valid stops.`);
@@ -373,51 +356,6 @@ function buildRoutePayloads(state) {
             stops,
         };
     });
-}
-
-function resolveStopCoords(stop, sourceOrder, index) {
-    const lat = parseCoordinate(
-        stop.latitude ??
-            stop.lat ??
-            sourceOrder.Latitude ??
-            sourceOrder.lat,
-        -90,
-        90,
-    );
-    const lng = parseCoordinate(
-        stop.longitude ??
-            stop.lng ??
-            sourceOrder.Longitude ??
-            sourceOrder.lng,
-        -180,
-        180,
-    );
-
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        return { lat, lng };
-    }
-
-    const orderId = sourceOrder.OrderID ?? sourceOrder.id ?? stop.orderId;
-    const numericId = Number(orderId);
-    const seed = Number.isFinite(numericId) ? numericId : index + 1;
-    const angle = ((seed % 12) / 12) * 2 * Math.PI;
-    const radius = 0.018 + (seed % 7) * 0.004;
-
-    return {
-        lat: 30.0444 + Math.sin(angle) * radius,
-        lng: 31.2357 + Math.cos(angle) * radius,
-    };
-}
-
-function parseCoordinate(value, min, max) {
-    if (value === null || value === undefined || String(value).trim() === "") {
-        return null;
-    }
-
-    const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed >= min && parsed <= max
-        ? parsed
-        : null;
 }
 
 function toIsoDateTime(value) {

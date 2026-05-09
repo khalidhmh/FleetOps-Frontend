@@ -286,7 +286,7 @@ async function initializeStep6Map(state) {
     });
 
     // create map with a safe initial center to avoid "Set map center and zoom first" errors
-    const initialCenter = latlngs.length > 0 ? latlngs[0] : [30.0444, 31.2357];
+    const initialCenter = latlngs.length > 0 ? latlngs[0] : [24.7136, 46.6753];
     const initialZoom = latlngs.length === 1 ? 12 : 6;
     step6MapInstance = L.map(mapEl, {
         center: initialCenter,
