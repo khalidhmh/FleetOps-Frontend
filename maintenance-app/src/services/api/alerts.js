@@ -1,190 +1,125 @@
 /**
- * FleetOps Maintenance — Alerts & Inspections API Service
- *
- * Fetches all alert data live from the backend API.
- * No static storage fallbacks.
- *
- * Endpoints:
- *   GET  /api/v1/maintenance/alerts/odometer          → odometer alerts
- *   GET  /api/v1/maintenance/alerts/insurance         → insurance-expiry alerts
- *   GET  /api/v1/maintenance/alerts/inspection        → overdue inspection alerts
- *   GET  /api/v1/maintenance/alerts/parts             → low-stock parts alerts
- *   PATCH /api/v1/maintenance/alerts/insurance-renew/{id}
- *   PATCH /api/v1/maintenance/alerts/inspection-complete/{id}
- *
- * @module services/api/alerts
+ * FleetOps Maintenance — Alerts API Service
+ * 
+ * Fetches and manages fleet-wide alerts for odometer, insurance,
+ * annual inspections, and part lifecycle.
  */
 
 import api from "/shared/api-handler.js";
 
 const BASE_URL = "http://localhost:8000";
 
-// ─── Auth helper ─────────────────────────────────────────────────────────────
-
+/**
+ * Reads the auth token from localStorage.
+ */
 function authHeaders() {
     const token = localStorage.getItem("token");
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// ─── Generic helpers ──────────────────────────────────────────────────────────
-
+/**
+ * Generic GET helper.
+ */
 async function get(path) {
     try {
         const { data: res } = await api.get(path, {
             baseURL: BASE_URL,
             headers: authHeaders(),
         });
-        if (!res?.success) {
-            console.warn(`[AlertsApi] GET ${path}: success=false`, res);
-            return [];
-        }
-        return Array.isArray(res.data) ? res.data : [];
-    } catch (err) {
-        console.error(`[AlertsApi] GET ${path} failed:`, err?.message ?? err);
-        return [];
-    }
-}
 
-async function patch(path, body = {}) {
-    try {
-        const { data: res } = await api.patch(path, body, {
-            baseURL: BASE_URL,
-            headers: authHeaders(),
-        });
-        return res ?? null;
+        if (!res?.success) {
+            console.error(`[AlertsApi] ${path}: success=false`, res);
+            return null;
+        }
+
+        return res.data ?? null;
     } catch (err) {
-        console.error(`[AlertsApi] PATCH ${path} failed:`, err?.message ?? err);
+        console.error(`[AlertsApi] ${path} failed:`, err?.message ?? err);
         return null;
     }
 }
 
-// ─── Data-shaping helpers ─────────────────────────────────────────────────────
-
 /**
- * Maps raw backend odometer record → view shape.
- *
- * Backend fields (from AlertsService.getOdometerAlerts):
- *   id, vehiclePlate, vehicleModel, lastServiceKM, currentOdometer,
- *   kmSinceService, threshold, status
+ * Generic POST helper.
  */
-function shapeOdometer(raw) {
-    return raw.map((r) => ({
-        id:              String(r.id             ?? r.vehicle_id ?? Math.random()),
-        vehiclePlate:    r.vehiclePlate    ?? r.license_plate ?? r.VehicleLicense ?? "—",
-        vehicleModel:    r.vehicleModel    ?? r.VehicleModel   ?? "—",
-        lastServiceKM:   r.lastServiceKM   ?? "0",
-        currentOdometer: r.currentOdometer ?? r.Current_odometer ?? "0",
-        kmSinceService:  r.kmSinceService  ?? "0",
-        threshold:       r.threshold       ?? "10,000",
-        status:          r.status          ?? "success",
-    }));
-}
-
-/**
- * Maps raw backend insurance record → view shape.
- *
- * Backend fields (from AlertsService.getInsuranceAlerts):
- *   id, vehiclePlate, vehicleModel, policyNumber, expiryDate,
- *   daysRemaining, status
- */
-function shapeInsurance(raw) {
-    return raw.map((r) => ({
-        id:            String(r.id ?? r.inspection_id ?? Math.random()),
-        vehiclePlate:  r.vehiclePlate  ?? r.VehicleLicense ?? "—",
-        vehicleModel:  r.vehicleModel  ?? r.VehicleModel   ?? "—",
-        policyNumber:  r.policyNumber  ?? r.certificate_number ?? "—",
-        expiryDate:    r.expiryDate    ?? "—",
-        daysRemaining: String(r.daysRemaining ?? "?"),
-        // Backend returns 'danger' for expired, 'warning' for expiring-soon
-        // View uses 'warning' for expiring-soon; map 'danger' → 'warning' too
-        status:        r.status === "success" ? "success" : "warning",
-    }));
-}
-
-/**
- * Maps raw backend inspection record → view shape.
- *
- * Backend fields (from AlertsService.getInspectionAlerts):
- *   id, vehiclePlate, vehicleModel, lastInspection, nextDueDate,
- *   daysRemaining, status
- */
-function shapeInspection(raw) {
-    return raw.map((r) => ({
-        id:            String(r.id ?? r.inspection_id ?? Math.random()),
-        vehiclePlate:  r.vehiclePlate  ?? r.VehicleLicense ?? "—",
-        vehicleModel:  r.vehicleModel  ?? r.VehicleModel   ?? "—",
-        lastInspection: r.lastInspection ?? "—",
-        nextDueDate:   r.nextDueDate   ?? "—",
-        daysRemaining: String(r.daysRemaining ?? "Overdue"),
-        status:        r.status === "success" ? "success" : "danger",
-    }));
-}
-
-/**
- * Maps raw backend parts record → view shape.
- *
- * Backend fields (from AlertsService.getPartsAlerts):
- *   id, vehiclePlate, vehicleModel, partName, installDate,
- *   usage, lifespan, stockQty, status
- */
-function shapeParts(raw) {
-    return raw.map((r) => ({
-        id:           String(r.id ?? r.part_id ?? Math.random()),
-        vehiclePlate: r.vehiclePlate ?? "—",
-        vehicleModel: r.vehicleModel ?? "—",
-        partName:     r.partName     ?? r.part_name    ?? "—",
-        installDate:  r.installDate  ?? r.created_at   ?? "—",
-        usage:        r.usage        ?? (r.stockQty != null ? `${r.stockQty} in stock` : "—"),
-        lifespan:     r.lifespan     ?? "—",
-        status:       r.status       ?? "warning",
-    }));
-}
-
-// ─── Public API ───────────────────────────────────────────────────────────────
-
-/**
- * Fetches all four alert categories in parallel.
- *
- * @returns {Promise<{ odometer, insurance, inspection, parts }>}
- */
-async function getAllAlerts() {
-    const [odometer, insurance, inspection, parts] = await Promise.all([
-        get("/api/v1/maintenance/alerts/odometer"),
-        get("/api/v1/maintenance/alerts/insurance"),
-        get("/api/v1/maintenance/alerts/inspection"),
-        get("/api/v1/maintenance/alerts/parts"),
-    ]);
-
-    return {
-        odometer:   shapeOdometer(odometer),
-        insurance:  shapeInsurance(insurance),
-        inspection: shapeInspection(inspection),
-        parts:      shapeParts(parts),
-    };
-}
-
-/**
- * Marks an insurance record as renewed.
- * @param {string|number} id  — inspection_id on the backend
- * @returns {Promise<object|null>}
- */
-async function renewInsurance(id) {
-    return patch(`/api/v1/maintenance/alerts/insurance-renew/${id}`);
-}
-
-/**
- * Marks an inspection as complete.
- * @param {string|number} id  — inspection_id on the backend
- * @returns {Promise<object|null>}
- */
-async function completeInspection(id) {
-    return patch(`/api/v1/maintenance/alerts/inspection-complete/${id}`);
+async function post(path, body = {}) {
+    try {
+        const { data: res } = await api.post(path, body, {
+            baseURL: BASE_URL,
+            headers: authHeaders(),
+        });
+        return res;
+    } catch (err) {
+        console.error(`[AlertsApi] POST ${path} failed:`, err?.message ?? err);
+        return { success: false, message: "Network error" };
+    }
 }
 
 const AlertsApi = {
-    getAllAlerts,
-    renewInsurance,
-    completeInspection,
+    /**
+     * Fetches all 4 categories of alerts and shapes them for the view.
+     */
+    async getAllAlerts() {
+        const [insurance, inspection, odometer, parts] = await Promise.all([
+            get("/api/v1/maintenance/alerts/insurance"),
+            get("/api/v1/maintenance/alerts/inspection"),
+            get("/api/v1/maintenance/alerts/odometer"),
+            get("/api/v1/maintenance/alerts/parts"),
+        ]);
+
+        return {
+            insurance: (insurance || []).map(a => ({
+                id: a.id,
+                vehiclePlate: a.license_plate ?? a.plate_number ?? a.vehicle_id ?? "—",
+                vehicleModel: a.vehicle_model ?? a.model ?? "—",
+                policyNumber: a.policy_number ?? "—",
+                expiryDate: a.expiry_date ?? a.insurance_expiry ?? "—",
+                daysRemaining: a.days_left ?? a.days_until_expiry ?? 0,
+                status: a.status ?? (Number(a.days_left ?? a.days_until_expiry) < 30 ? "warning" : "success")
+            })),
+            inspection: (inspection || []).map(a => ({
+                id: a.id,
+                vehiclePlate: a.license_plate ?? a.plate_number ?? a.vehicle_id ?? "—",
+                vehicleModel: a.vehicle_model ?? a.model ?? "—",
+                lastInspection: a.last_inspection_date ?? a.last_inspection ?? "—",
+                nextDueDate: a.expiry_date ?? a.next_due_date ?? "—",
+                daysRemaining: a.days_left ?? a.days_until_expiry ?? 0,
+                status: a.status ?? (Number(a.days_left ?? a.days_until_expiry) < 0 ? "danger" : "success")
+            })),
+            odometer: (odometer || []).map(a => ({
+                vehiclePlate: a.license_plate ?? a.plate_number ?? a.vehicle_id ?? "—",
+                vehicleModel: a.vehicle_model ?? a.model ?? "—",
+                lastServiceKM: a.last_service_km ?? 0,
+                currentOdometer: a.current_km ?? a.current_odometer ?? a.odometer_km ?? 0,
+                kmSinceService: a.km_since_last_service ?? 0,
+                threshold: a.service_threshold ?? a.threshold_km ?? 10000,
+                status: a.status ?? (Number(a.km_since_last_service) > (Number(a.service_threshold ?? 10000) - 500) ? "warning" : "success")
+            })),
+            parts: (parts || []).map(a => ({
+                vehiclePlate: a.license_plate ?? a.plate_number ?? a.vehicle_id ?? "Stock",
+                vehicleModel: a.vehicle_model ?? a.model ?? "—",
+                partName: a.part_name ?? a.name ?? "—",
+                installDate: a.install_date ?? "—",
+                usage: a.usage_hours ?? a.usage ?? "—",
+                lifespan: a.expected_lifespan ?? a.lifespan ?? "—",
+                status: a.status ?? (a.stock_level < a.min_stock ? "warning" : "success")
+            }))
+        };
+    },
+
+    /**
+     * Marks an insurance policy as renewed.
+     */
+    async renewInsurance(id) {
+        return post(`/api/v1/maintenance/alerts/insurance/${id}/renew`);
+    },
+
+    /**
+     * Marks an annual inspection as complete.
+     */
+    async completeInspection(id) {
+        return post(`/api/v1/maintenance/alerts/inspection/${id}/complete`);
+    }
 };
 
 export default AlertsApi;

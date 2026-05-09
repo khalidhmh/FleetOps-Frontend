@@ -12,6 +12,12 @@ let state = {
 window.__refreshIcons = () => createIcons({ icons });
 
 export function mount(root) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
+
     // Initial fetch
     Promise.all([
         emergencyDispatchService.getIncidents(),
