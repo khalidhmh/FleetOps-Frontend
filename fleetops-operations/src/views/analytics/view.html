@@ -4,14 +4,17 @@
       <h1 class="heading-lg">Analytics & Reports</h1>
     </div>
     <div class="analytics-header__right">
-       <div class="date-shortcuts-wrap">
-         <button class="icon-btn"><i data-lucide="calendar"></i></button>
-         <div class="date-shortcuts">
-           <button class="date-btn" data-range="7d">Today</button>
-           <button class="date-btn is-active" data-range="30d">This Week</button>
-           <button class="date-btn" data-range="90d">This Month</button>
-         </div>
-       </div>
+      <div class="date-shortcuts-wrap">
+        <button class="button secondary" id="routes-export-btn" type="button">
+          <i data-lucide="download"></i>
+          <span>Export</span>
+        </button>
+        <div class="date-shortcuts">
+          <button class="date-btn" data-range="today">Today</button>
+          <button class="date-btn is-active" data-range="7d">This Week</button>
+          <button class="date-btn" data-range="30d">This Month</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -32,7 +35,7 @@
     <div class="kpi-grid" id="analytics-kpi-grid">
       <!-- Populated by JS -->
     </div>
-    <div class="charts-row" style="margin-top: 16px;">
+    <div class="charts-row" style="margin-top: 16px">
       <div class="chart-card">
         <h2 class="chart-title">Monthly Financials</h2>
         <div id="monthly-chart" class="monthly-chart"></div>
@@ -50,7 +53,7 @@
       <div class="formula-card full-width" id="score-formula-card">
         Loading score formula...
       </div>
-      
+
       <div class="analytics-table-card mt-4">
         <div class="analytics-table-wrap">
           <table class="analytics-table driver-perf-table full-width">
@@ -73,7 +76,7 @@
 
   <!-- Fleet Utilization Tab -->
   <div class="tab-content" id="tab-fleet">
-    <div class="charts-row" style="margin-bottom: 16px;">
+    <div class="charts-row" style="margin-bottom: 16px">
       <div class="chart-card">
         <h2 class="chart-title">Fleet Status</h2>
         <div class="fleet-status-wrap">
@@ -133,7 +136,9 @@
 
   <!-- Fuel Audit Tab -->
   <div class="tab-content" id="tab-fuel">
-    <h2 class="chart-title" style="margin-bottom: 16px;">Fuel Expense Audit — Actual vs Expected</h2>
+    <h2 class="chart-title" style="margin-bottom: 16px">
+      Fuel Expense Audit — Actual vs Expected
+    </h2>
     <div class="analytics-table-card">
       <div class="analytics-table-wrap">
         <table class="analytics-table full-width">
@@ -169,7 +174,7 @@
         <span class="summary-card-value" id="maintenance-reactive">...</span>
       </div>
     </div>
-    
+
     <div class="analytics-table-card mt-4">
       <div class="table-header">
         <h2 class="chart-title">Maintenance Costs Breakdown</h2>

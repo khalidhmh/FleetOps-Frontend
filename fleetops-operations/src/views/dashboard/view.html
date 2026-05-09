@@ -1,6 +1,5 @@
 <section class="view-page app-section dashboard-page stack">
   <main class="dashboard-main">
-
     <div class="fleet-row summary-reports">
       <div class="report-card active-routes">
         <span class="report-label">ACTIVE ROUTES</span>
@@ -39,29 +38,47 @@
         <div class="fleet-operations-header">
           <i data-lucide="truck" class="icons"></i>
           <span class="active-fleet-title">Active Fleet Operations</span>
-          <a href="/routes" data-link class="btn-view-all">View All <i data-lucide="arrow-right"></i></a>
+          <a href="/routes" data-link class="btn-view-all"
+            >View All <i data-lucide="arrow-right"></i
+          ></a>
         </div>
         <table class="fleet-operations-table">
-              <thead>
-                <tr>
-                  <th>Route ID</th>
-                  <th>Location</th>
-                  <th>Driver</th>
-                  <th>Progress</th>
-                  <th>ETA</th>
-                </tr>
-              </thead>
-              <tbody class="fleet-operations-tbody"></tbody>
-            </table>
+          <thead>
+            <tr>
+              <th>Route ID</th>
+              <th>Route</th>
+              <th>Location</th>
+              <th>Driver</th>
+              <th>Vehicle</th>
+              <th>Progress</th>
+              <th>ETA</th>
+            </tr>
+          </thead>
+          <tbody class="fleet-operations-tbody"></tbody>
+        </table>
 
-            <div class="fleet-operations-footer">
-              <span class="fleet-operations-results">Showing 1 - 10 of 100 results</span>
-              <div class="fleet-operations-pagination">
-                <button class="fleet-operations-button" id="fleet-operations-prev" type="button">Previous</button>
-                <button class="fleet-operations-button" id="fleet-operations-next" type="button">Next</button>
-              </div>
-            </div>
+        <div class="fleet-operations-footer">
+          <span class="fleet-operations-results"
+            >Showing 1 - 10 of 100 results</span
+          >
+          <div class="fleet-operations-pagination">
+            <button
+              class="fleet-operations-button"
+              id="fleet-operations-prev"
+              type="button"
+            >
+              Previous
+            </button>
+            <button
+              class="fleet-operations-button"
+              id="fleet-operations-next"
+              type="button"
+            >
+              Next
+            </button>
           </div>
+        </div>
+      </div>
       <!-- ========== Alerts Panel ========== -->
       <div class="alerts-panel">
         <div class="recent-alerts">
@@ -76,27 +93,12 @@
                 <span class="alert-time">14:22</span>
               </div>
               <div class="alert-message">
-                <strong>V-788293</strong> detected sudden G-force spike on Route A4.
+                <strong>V-788293</strong> detected sudden G-force spike on Route
+                A4.
               </div>
             </div>
           </div>
         </div>
-        <div class="window-violation">
-          <div class="window-violation-header">
-            <i data-lucide="clock" class="icons delay-icon"></i>
-            <span>Window Violations</span>
-          </div>
-          <div class="window-violation-content" id="window-violations-container">
-            <div class="alert-item alert-warning">
-              <div class="alert-meta">
-                <span class="alert-type">ETA MISSED</span>
-                <span class="alert-time">12:30</span>
-              </div>
-              <div class="alert-message">
-                <strong>ORD-88219</strong> +45M Northside Distribution Center.
-              </div>
-            </div>
-          </div>
       </div>
     </div>
   </main>
