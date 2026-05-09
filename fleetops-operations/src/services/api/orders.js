@@ -1,12 +1,19 @@
 import api from "/shared/api-handler.js";
-import {
-    IMPORT_NOTE,
-    ORDER_PAYMENT_OPTIONS,
-    ORDER_PRIORITY_OPTIONS,
-    ORDER_STATUS_OPTIONS,
-} from "../storage/orders.js";
 
 const API_BASE = "http://localhost:8000/api/v1";
+const IMPORT_NOTE =
+    "CSV and XML files are supported. Imported rows are validated before they are added to orders.";
+const ORDER_PAYMENT_OPTIONS = ["Prepaid", "Cash", "COD", "Card"];
+const ORDER_PRIORITY_OPTIONS = ["Low", "Normal", "High", "Urgent"];
+const ORDER_STATUS_OPTIONS = [
+    "All",
+    "Pending",
+    "Assigned",
+    "Out for Delivery",
+    "Delivered",
+    "Failed",
+    "Returned",
+];
 
 async function getOrders() {
     try {
@@ -51,17 +58,21 @@ function getImportNote() {
 
 async function createOrder(payload) {
     try {
+        const paymentType = payload.paymentType === "COD" ? "COD" : "prepaid";
         const backendPayload = {
-            CustomerID: 12, // Mock customer ID
-            DriverID: null,
-            vehicle_id: null,
-            Weight: Number(payload.weightKg) || 0,
-            Volume: Number(payload.volumeM3) || 0,
-            Priority: ORDER_PRIORITY_OPTIONS.includes(payload.priority) ? payload.priority : "Normal",
-            Payment_method: ORDER_PAYMENT_OPTIONS.includes(payload.paymentType) ? payload.paymentType : "Prepaid",
-            DeliveryTimeWindow: payload.paymentWindow?.trim() || "09:00-12:00",
-            Area: payload.address?.trim() || "Cairo",
-            Status: "Pending"
+            customer_name: payload.customerName?.trim(),
+            customer_phone: payload.customerPhone?.trim(),
+            customer_email: payload.customerEmail?.trim() || null,
+            delivery_address: payload.address?.trim(),
+            lat: Number(payload.latitude),
+            lng: Number(payload.longitude),
+            weight_kg: Number(payload.weightKg) || 0,
+            volume_m3: Number(payload.volumeM3) || 0,
+            payment_type: paymentType,
+            cod_amount: paymentType === "COD" ? Number(payload.codAmount) || 0 : null,
+            priority: payload.priority === "High" || payload.priority === "Urgent" ? "express" : "normal",
+            delivery_preference: payload.paymentWindow?.trim() || null,
+            notes: payload.notes?.trim() || null,
         };
         const response = await api.post(`${API_BASE}/orders`, backendPayload);
         if (response.data && response.data.success) {
@@ -99,10 +110,6 @@ async function importOrders(file) {
     }
 }
 
-function clone(value) {
-    return JSON.parse(JSON.stringify(value));
-}
-
 function mapBackendOrderToFrontend(dbOrder) {
     const createdAt = dbOrder.Created_at || dbOrder.created_at;
     const dateStr = createdAt ? new Date(createdAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}) : "Unknown Date";
@@ -118,9 +125,9 @@ function mapBackendOrderToFrontend(dbOrder) {
     return {
         id: `ORD-${dbOrder.OrderID || dbOrder.id}`,
         customerName: dbOrder.customer?.user?.name || "Unknown Customer",
-        customerPhone: dbOrder.customer?.phone || "+20 000 000 0000",
-        customerEmail: dbOrder.customer?.user?.email || "customer@fleetops.eg",
-        address: dbOrder.Area || dbOrder.DeliveryAddress || "Cairo",
+        customerPhone: dbOrder.customer?.user?.phone_no || "--",
+        customerEmail: dbOrder.customer?.user?.email || "--",
+        address: dbOrder.Area || dbOrder.DeliveryAddress || "--",
         weightKg: Number(dbOrder.Weight) || 0,
         volumeM3: Number(dbOrder.Volume) || 0,
         paymentType: dbOrder.Payment_method || "Prepaid",

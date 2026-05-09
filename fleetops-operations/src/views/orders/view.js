@@ -447,6 +447,10 @@ function renderAddModal() {
         priority: "Normal",
         volumeM3: "0.5",
         weightKg: "10",
+        latitude: "",
+        longitude: "",
+        codAmount: "0",
+        notes: "",
     };
 
     const priorityOptions = OrdersApi.getPriorityOptions()
@@ -515,6 +519,22 @@ function renderAddModal() {
                             <label>
                                 <span class="label">Volume (m3)</span>
                                 <input name="volumeM3" type="number" min="0" step="0.1" value="${form.volumeM3}" required />
+                            </label>
+                            <label>
+                                <span class="label">Latitude</span>
+                                <input name="latitude" type="number" min="-90" max="90" step="0.000001" value="${form.latitude}" required />
+                            </label>
+                            <label>
+                                <span class="label">Longitude</span>
+                                <input name="longitude" type="number" min="-180" max="180" step="0.000001" value="${form.longitude}" required />
+                            </label>
+                            <label>
+                                <span class="label">COD Amount</span>
+                                <input name="codAmount" type="number" min="0" step="1" value="${form.codAmount}" />
+                            </label>
+                            <label class="full-span">
+                                <span class="label">Notes</span>
+                                <input name="notes" value="${form.notes}" />
                             </label>
                         </div>
                         <div class="modal-actions">
