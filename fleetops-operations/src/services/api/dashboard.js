@@ -21,7 +21,6 @@ function authHeaders() {
 //   data.active_routes   : { count, change, positive }
 //   data.orders_today    : { count, change, positive }
 //   data.open_alerts     : { count, change, positive }
-//   data.fuel_efficiency : { count, change, positive }
 //   data.delivery_rate   : { count, change, positive }
 
 /**
@@ -65,12 +64,6 @@ async function getSummaryData() {
         count: d.open_alerts?.count ?? "—",
         change: d.open_alerts?.change ?? "N/A",
         positive: d.open_alerts?.positive ?? null,
-      },
-      {
-        selector: ".fuel-efficency", // matches the CSS class in HTML
-        count: d.fuel_efficiency?.count ?? "—",
-        change: d.fuel_efficiency?.change ?? "N/A",
-        positive: d.fuel_efficiency?.positive ?? null,
       },
       {
         selector: ".delivery-rate",
