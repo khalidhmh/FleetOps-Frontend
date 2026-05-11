@@ -1,4 +1,5 @@
 import api from "/shared/api-handler.js";
+import { saveCo2ReportData } from "../storage/co2ReportData.js";
 
 api.setBaseURL("http://localhost:8000");
 
@@ -131,13 +132,23 @@ async function getDriverPerformance() {
 async function getCO2ReportData() {
   try {
     const response = await api.get("/api/v1/analytics/kpis/co2-report");
-    return response.data.data.vehicles.map((v) => ({
-      vehicle: v.vehicle,
-      type: v.type,
-      emissions: v.emissions_tons,
-      reduction: parseFloat(v.reduction_vs_last_month) || 0,
-      status: v.status,
+    const payload = response.data?.data ?? response.data;
+    const rows = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.vehicles)
+        ? payload.vehicles
+        : [];
+
+    const record = rows.map((v) => ({
+      vehicle: v.vehicle || v.Vehicle || v.license || v.vehicle_id || "",
+      type: v.type || v.Type || "",
+      emissions: v.emissions_tons || v.emissions || 0,
+      reduction: parseFloat(v.reduction_vs_last_month || v.reduction || 0) || 0,
+      status: v.status || v.Status || "Unknown",
     }));
+
+    saveCo2ReportData(record);
+    return record;
   } catch (e) {
     console.error("Failed to fetch CO2 report", e);
     return [];

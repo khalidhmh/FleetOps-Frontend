@@ -4,6 +4,31 @@ import {
   icons,
 } from "../../../../node_modules/lucide/dist/esm/lucide.mjs";
 import { settingsMockData } from "../../services/storage/settings.js";
+import { getStoredCo2ReportData } from "../../services/storage/co2ReportData.js";
+
+const defaultCo2ReportMockData = [
+  {
+    vehicle: "أ ب ج 1001",
+    type: "Diesel",
+    emissions: 8.4,
+    reduction: 4.2,
+    status: "Good",
+  },
+  {
+    vehicle: "أ ب ج 1002",
+    type: "Electric",
+    emissions: 1.2,
+    reduction: 12.7,
+    status: "Excellent",
+  },
+  {
+    vehicle: "أ ب ج 1003",
+    type: "Hybrid",
+    emissions: 4.9,
+    reduction: -1.5,
+    status: "Poor",
+  },
+];
 
 let exportButton = null;
 let exportHandler = null;
@@ -463,15 +488,9 @@ async function renderCO2Report(root) {
   const tbody = root.querySelector("#co2-tbody");
   if (!tbody) return;
 
-  const data = await AnalyticsStorage.getCO2ReportData();
-
+  let data = getStoredCo2ReportData();
   if (!Array.isArray(data) || data.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="empty-state">No CO2 report data found for this period.</td>
-      </tr>
-    `;
-    return;
+    data = defaultCo2ReportMockData;
   }
 
   tbody.innerHTML = data
