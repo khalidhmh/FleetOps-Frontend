@@ -388,6 +388,15 @@ async function renderCO2Report(root) {
 
   const data = await AnalyticsStorage.getCO2ReportData();
 
+  if (!Array.isArray(data) || data.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty-state">No CO2 report data found for this period.</td>
+      </tr>
+    `;
+    return;
+  }
+
   tbody.innerHTML = data
     .map((row) => {
       const statusClass =
@@ -466,6 +475,15 @@ async function renderMaintenanceCost(root) {
   // Render Table
   const tbody = root.querySelector("#maintenance-tbody");
   if (!tbody) return;
+
+  if (!Array.isArray(data.table) || data.table.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-state">No maintenance cost records available.</td>
+      </tr>
+    `;
+    return;
+  }
 
   tbody.innerHTML = data.table
     .map((row) => {

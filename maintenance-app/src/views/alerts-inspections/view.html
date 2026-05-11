@@ -1,109 +1,107 @@
 <section class="view-page alerts-inspections-page stack">
-
-    <header class="view-header card">
-        <div class="header-content">
-            <div class="title-group">
-                <h1 class="heading-lg">Alerts & Inspections</h1>
-                <p class="text-muted">Centralized view of all fleet health alerts</p>
-            </div>
-        </div>
-    </header>
-
-    <div class="alerts-filters card">
-        <div class="tabs-list">
-            <button class="tab-item active" data-tab="odometer">
-                Odometer Alerts
-                <span class="tab-badge">1</span>
-            </button>
-            <button class="tab-item" data-tab="insurance">
-                Insurance Expiry
-                <span class="tab-badge">4</span>
-            </button>
-            <button class="tab-item" data-tab="inspection">
-                Annual Inspection
-                <span class="tab-badge">2</span>
-            </button>
-            <button class="tab-item" data-tab="parts">
-                Part Lifecycle
-                <span class="tab-badge">1</span>
-            </button>
-        </div>
+  <header class="view-header card">
+    <div class="header-content">
+      <div class="title-group">
+        <h1 class="heading-lg">Alerts & Inspections</h1>
+        <p class="text-muted">Centralized view of all fleet health alerts</p>
+      </div>
     </div>
+  </header>
 
-    <!-- Table Section -->
-    <div class="alerts-table-container card">
-        <div class="table-responsive">
-            <!-- Odometer Table -->
-            <div id="odometer-content" class="tab-content active">
-                <table class="alerts-table">
-                    <thead>
-                        <tr>
-                            <th>Vehicle</th>
-                            <th>Last Service KM</th>
-                            <th>Current Odometer</th>
-                            <th>KM Since Service</th>
-                            <th>Threshold</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="odometer-table-body"></tbody>
-                </table>
-            </div>
-
-            <!-- Insurance Table -->
-            <div id="insurance-content" class="tab-content" style="display: none;">
-                <table class="alerts-table">
-                    <thead>
-                        <tr>
-                            <th>Vehicle</th>
-                            <th>Policy Number</th>
-                            <th>Expiry Date</th>
-                            <th>Days Remaining</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="insurance-table-body"></tbody>
-                </table>
-            </div>
-
-            <!-- Inspection Table -->
-            <div id="inspection-content" class="tab-content" style="display: none;">
-                <table class="alerts-table">
-                    <thead>
-                        <tr>
-                            <th>Vehicle</th>
-                            <th>Last Inspection</th>
-                            <th>Next Due Date</th>
-                            <th>Days Remaining</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inspection-table-body">
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Parts Table -->
-            <div id="parts-content" class="tab-content" style="display: none;">
-                <table class="alerts-table">
-                    <thead>
-                        <tr>
-                            <th>Vehicle</th>
-                            <th>Part Name</th>
-                            <th>Install Date</th>
-                            <th>Usage</th>
-                            <th>Lifespan</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="parts-table-body">
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <div class="alerts-filters card">
+    <div class="tabs-list">
+      <button class="tab-item active" data-tab="odometer">
+        Odometer Alerts
+        <span class="tab-badge">1</span>
+      </button>
+      <button class="tab-item" data-tab="insurance">
+        Insurance Expiry
+        <span class="tab-badge">4</span>
+      </button>
+      <button class="tab-item" data-tab="inspection">
+        Annual Inspection
+        <span class="tab-badge">2</span>
+      </button>
+      <button class="tab-item" data-tab="parts">
+        Part Lifecycle
+        <span class="tab-badge">1</span>
+      </button>
     </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="alerts-table-container card">
+    <div class="table-responsive">
+      <!-- Odometer Table -->
+      <div id="odometer-content" class="tab-content active">
+        <table class="alerts-table">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>Last Service KM</th>
+              <th>Current Odometer</th>
+              <th>KM Since Service</th>
+              <th>Threshold</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="odometer-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Insurance Table -->
+      <div id="insurance-content" class="tab-content" style="display: none">
+        <table class="alerts-table">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>Policy Number</th>
+              <th>Expiry Date</th>
+              <th>Days Remaining</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="insurance-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Inspection Table -->
+      <div id="inspection-content" class="tab-content" style="display: none">
+        <table class="alerts-table">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>Last Inspection</th>
+              <th>Next Due Date</th>
+              <th>Days Remaining</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="inspection-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Parts Table -->
+      <div id="parts-content" class="tab-content" style="display: none">
+        <table class="alerts-table">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>Part Name</th>
+              <th>Install Date</th>
+              <th>Usage</th>
+              <th>Lifespan</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="parts-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </section>

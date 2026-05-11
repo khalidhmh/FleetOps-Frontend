@@ -51,9 +51,43 @@ async function getKpiData(period = "30d") {
 async function getMonthlyChartData() {
   try {
     const response = await api.get(
-      "/api/v1/analytics/analytics-revenue-chart?months=6",
+      "/api/v1/analytics/analytics-revenue-chart",
+      {
+        params: { months: 3 },
+      },
     );
-    return response.data.data;
+
+    if (response.status === 204) {
+      console.warn("Monthly chart API returned 204 No Content.");
+      return { labels: [], revenue: [], costs: [], profit: [] };
+    }
+
+    if (!response || !response.data) {
+      console.warn("Monthly chart API response is missing data.");
+      return { labels: [], revenue: [], costs: [], profit: [] };
+    }
+
+    const payload = response.data.data;
+    if (!payload || typeof payload !== "object") {
+      console.warn("Monthly chart API returned unexpected payload.");
+      return { labels: [], revenue: [], costs: [], profit: [] };
+    }
+
+    const labels = Array.isArray(payload.labels) ? payload.labels : [];
+    const revenue = Array.isArray(payload.revenue)
+      ? payload.revenue
+      : Array.isArray(payload.data)
+        ? payload.data
+        : [];
+    const costs = Array.isArray(payload.costs)
+      ? payload.costs
+      : Array(labels.length).fill(0);
+    const profit = revenue.map((value, index) => {
+      const cost = costs[index] || 0;
+      return value - cost;
+    });
+
+    return { labels, revenue, costs, profit, currency: payload.currency || "" };
   } catch (e) {
     console.error("Failed to fetch chart data", e);
     return { labels: [], revenue: [], costs: [], profit: [] };
@@ -151,22 +185,45 @@ async function getMaintenanceCostData() {
       "/api/v1/analytics/analytics-maintenance-cost",
     );
     const d = response.data.data;
+
+    if (!d || Array.isArray(d) || typeof d !== "object") {
+      console.warn(
+        "Maintenance cost API returned an array instead of the expected object. Rendering empty maintenance cost state.",
+      );
+      return {
+        summary: { total: 0, preventive: 0, reactive: 0, currency: "EGP" },
+        table: [],
+      };
+    }
+
+    if (!d || typeof d !== "object") {
+      console.warn(
+        "Maintenance cost API returned unexpected data shape. Rendering empty maintenance cost state.",
+      );
+      return {
+        summary: { total: 0, preventive: 0, reactive: 0, currency: "EGP" },
+        table: [],
+      };
+    }
+
     return {
       summary: {
-        total: d.grand_total,
-        preventive: d.total_preventive,
-        reactive: d.total_reactive,
+        total: d.grand_total || 0,
+        preventive: d.total_preventive || 0,
+        reactive: d.total_reactive || 0,
         currency: "EGP",
       },
-      table: d.top_vehicles.map((v) => ({
-        vehicle: v.VehicleLicense,
-        service: v.VehicleType,
-        date: "N/A", // the endpoint groups by vehicle, doesn't give date per vehicle easily
-        parts: v.total_cost / 2, // mock splitting
-        labor: v.total_cost / 2, // mock splitting
-        total: v.total_cost,
-        status: "Completed",
-      })),
+      table: Array.isArray(d.top_vehicles)
+        ? d.top_vehicles.map((v) => ({
+            vehicle: v.VehicleLicense,
+            service: v.VehicleType,
+            date: "N/A", // the endpoint groups by vehicle, doesn't give date per vehicle easily
+            parts: v.total_cost / 2, // mock splitting
+            labor: v.total_cost / 2, // mock splitting
+            total: v.total_cost,
+            status: "Completed",
+          }))
+        : [],
     };
   } catch (e) {
     console.error("Failed to fetch maintenance cost", e);
