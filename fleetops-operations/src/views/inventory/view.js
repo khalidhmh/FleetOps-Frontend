@@ -21,12 +21,11 @@ const formatCurrency = (value) => {
 
 // Stock status logic using GLOBAL settings threshold
 const getStockStatus = (qty, itemMinThreshold) => {
-    const threshold = globalSettings ? globalSettings.fleetPolicies.lowStockThreshold : itemMinThreshold;
+    const threshold = itemMinThreshold; // لغيت الاعتماد على الإعدادات العامة هنا
     if (qty === 0) return { label: 'Out of Stock', class: 'status-out-stock', fillClass: 'red' };
     if (qty <= threshold) return { label: 'Low Stock', class: 'status-low-stock', fillClass: 'orange' };
     return { label: 'In Stock', class: 'status-in-stock', fillClass: 'green' };
 };
-
 // Compute analytics
 const computeAnalytics = (data) => {
     let totalItems = 0;
@@ -118,8 +117,7 @@ const render = () => {
                 const tr = document.createElement('tr');
                 const status = getStockStatus(item.quantity, item.minThreshold);
                 const progressPct = Math.min(100, Math.round((item.quantity / item.maxLevel) * 100));
-                const currentThreshold = globalSettings ? globalSettings.fleetPolicies.lowStockThreshold : item.minThreshold;
-
+                const currentThreshold = item.minThreshold;
                 tr.innerHTML = `
                     <td class="part-id">${item.id}</td>
                     <td class="part-name">${item.name}</td>

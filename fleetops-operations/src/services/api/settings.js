@@ -1,15 +1,8 @@
-import api from "/shared/api-handler.js";
-import { SETTINGS_STORAGE_KEY,settingsMockData} from "../storage/settings.js";
+import { SETTINGS_STORAGE_KEY, settingsMockData } from "../storage/settings.js";
 
-// ─── Global Setup ─────────────────────────────────────────────────────────────
-// إعداد قاعدة URL وهمية (يمكن تعديله لاحقًا ليتوافق مع API حقيقي)
-api.setBaseURL("http://localhost:3000");
-
-// دالة محاكاة تأخير الشبكة لزيادة واقعية التجربة
 const delay = (ms = 100) => new Promise(resolve => setTimeout(resolve, ms));
 
-// ─── API Methods ────────────────────────────────────────────────────────────
-// API: GET /api/settings
+
 export async function getSettings() {
     await delay(100);
     const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);

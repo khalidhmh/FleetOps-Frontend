@@ -9,7 +9,7 @@ let globalSettings = null;
 
 // Stock status logic
 const getStockStatus = (qty, itemMinThreshold) => {
-    const threshold = globalSettings ? globalSettings.fleetPolicies.lowStockThreshold : itemMinThreshold;
+    const threshold = itemMinThreshold; // لغينا الاعتماد على الإعدادات العامة هنا
     if (qty === 0) return { label: 'Out of Stock', class: 'status-out-stock', fillClass: 'red' };
     if (qty <= threshold) return { label: 'Low Stock', class: 'status-low-stock', fillClass: 'orange' };
     return { label: 'In Stock', class: 'status-in-stock', fillClass: 'green' };
@@ -91,9 +91,7 @@ const render = () => {
                 const tr = document.createElement('tr');
                 const status = getStockStatus(item.quantity, item.minThreshold);
                 const progressPct = Math.min(100, Math.round((item.quantity / item.maxLevel) * 100));
-                const currentThreshold = globalSettings ? globalSettings.fleetPolicies.lowStockThreshold : item.minThreshold;
-
-                // 9 أعمدة فقط متوافقة مع ملف الـ HTML بتاع الصيانة وفيها زرار Use
+                const currentThreshold = item.minThreshold;
                 tr.innerHTML = `
                     <td class="part-id">${item.id}</td>
                     <td class="part-name">${item.name}</td>
