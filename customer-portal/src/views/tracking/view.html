@@ -1,0 +1,50 @@
+<!-- Tracking Dispatcher — shown briefly while we resolve the token & redirect -->
+<div class="ctv-shell" id="ctv-shell">
+
+  <!-- ── Loading State ──────────────────────────────────────────── -->
+  <div class="ctv-state ctv-state--loading" id="ctv-loading" aria-live="polite">
+    <div class="ctv-spinner" aria-hidden="true"></div>
+    <p class="ctv-loading-text">Loading your order…</p>
+  </div>
+
+  <!-- ── Error State ────────────────────────────────────────────── -->
+  <div class="ctv-state ctv-state--error" id="ctv-error" hidden>
+    <div class="ctv-error-icon" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h2 class="ctv-error-title">Something went wrong</h2>
+    <p  class="ctv-error-body"  id="ctv-error-msg">
+      We couldn't load your tracking information. Please check your link and try again.
+    </p>
+    <button class="ctv-retry-btn" id="ctv-retry-btn">Try Again</button>
+  </div>
+
+  <!-- ── Expired-Link State ─────────────────────────────────────── -->
+  <div class="ctv-state ctv-state--expired" id="ctv-expired" hidden>
+    <div class="ctv-expired-icon" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </div>
+    <h2 class="ctv-error-title">This link has expired</h2>
+    <p  class="ctv-error-body">
+      Tracking links are valid for 72 hours after delivery.<br>
+      Contact support if you need further assistance.
+    </p>
+    <a  class="ctv-retry-btn"
+        href="mailto:priority@fleetops.delivery?subject=Expired%20Tracking%20Link"
+        id="ctv-contact-btn">
+      Contact Support
+    </a>
+  </div>
+
+</div>

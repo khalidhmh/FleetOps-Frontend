@@ -36,7 +36,16 @@ async function getOrderById(orderId) {
         const id = orderId.replace("ORD-", "");
         const response = await api.get(`${API_BASE}/orders/${id}`);
         if (response.data && response.data.success && response.data.data) {
-            return mapBackendOrderToFrontend(response.data.data);
+            const raw = response.data.data;
+
+            // ── Diagnostic: log the raw tracking fields the backend returned
+            console.debug(
+                `[Orders] Raw API response for ${orderId}:`,
+                '\n  tracking_url     =>', raw.tracking_url,
+                '\n  LiveTrackingLink =>', raw.LiveTrackingLink,
+            );
+
+            return mapBackendOrderToFrontend(raw);
         }
         return null;
     } catch (error) {
@@ -147,7 +156,12 @@ function mapBackendOrderToFrontend(dbOrder) {
         paymentWindow: dbOrder.DeliveryTimeWindow || "09:00-12:00",
         priority: priorityStr,
         status: dbOrder.Status || "Pending",
-        trackingLink: dbOrder.LiveTrackingLink || `https://track.fleetops.eg/${dbOrder.OrderID}`,
+        // tracking_url: use the backend-provided link exclusively.
+        // Prefer the snake_case `tracking_url` field (new API), then
+        // the PascalCase `LiveTrackingLink` (legacy field).
+        // If neither is present, set null — the view renders a disabled
+        // "No Token" chip instead of a broken or fabricated link.
+        tracking_url: dbOrder.tracking_url || dbOrder.LiveTrackingLink || null,
         driver: dbOrder.driver ? {
             name: dbOrder.driver.user?.name || "Unknown",
             initials: (dbOrder.driver.user?.name || "U").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase(),

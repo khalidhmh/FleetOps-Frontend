@@ -6,10 +6,6 @@
             <span id="users-count-label" class="users-count-pill">— members</span>
         </div>
         <div class="users-header__actions">
-            <button id="users-export-btn" class="button secondary" type="button">
-                <i data-lucide="download"></i>
-                Export
-            </button>
             <button id="users-add-btn" class="button primary" type="button">
                 <i data-lucide="plus"></i>
                 Add User
@@ -26,7 +22,6 @@
             <button class="filter-tab is-active" data-filter="all" type="button">All</button>
             <button class="filter-tab" data-filter="customer" type="button">Customer</button>
             <button class="filter-tab" data-filter="dispatcher" type="button">Dispatcher</button>
-            <!-- التعديل هنا: fleetmanager -->
             <button class="filter-tab" data-filter="fleetmanager" type="button">FleetManager</button>
         </div>
     </div>
@@ -40,14 +35,13 @@
                     <th>Role</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <!-- تم حذف City -->
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="users-table-body">
                 <tr>
-                    <td colspan="8" class="users-table__loading">
+                    <td colspan="7" class="users-table__loading">
                         <i data-lucide="loader-circle"></i>
                         Loading users...
                     </td>
@@ -58,7 +52,6 @@
 
 </section>
 
-<!-- Add/Edit User Modal -->
 <div id="users-modal" class="modal-backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-labelledby="modal-title">
         <div class="modal__header">
@@ -91,10 +84,16 @@
                     <option value="mechanic">Mechanic</option>
                 </select>
             </div>
-            <!-- <div> -->
-                <!-- <label class="label" for="modal-city">City</label>
-                <input id="modal-city" type="text" placeholder="e.g. Cairo" /> -->
-            <!-- </div> -->
+
+            <div>
+                <label class="label" for="modal-password">Password</label>
+                <input id="modal-password" type="password"
+                    placeholder="Enter password (leave empty if editing to keep current)" />
+            </div>
+            <div>
+                <label class="label" for="modal-password-confirmation">Confirm Password</label>
+                <input id="modal-password-confirmation" type="password" placeholder="Confirm password" />
+            </div>
             <div>
                 <label class="label" for="modal-status">Status</label>
                 <select id="modal-status">
@@ -109,4 +108,4 @@
             <button id="modal-save-btn" class="button primary" type="button">Save User</button>
         </div>
     </div>
-</section>
+</div> ```

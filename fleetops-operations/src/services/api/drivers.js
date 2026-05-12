@@ -57,50 +57,27 @@ async function getDrivers_OLD_SHALLOW() {
  * Fetches available drivers from the backend and maps each record to the
  * full nested structure expected by the Drivers view UI.
  *
- * Backend shape: { driver_id, license_no, status, score, user: { name, email, phone } }
+ * Backend shape: { driver_id, license_no, status, safety_score, contact_number, average_rating, etc. }
  * UI shape:      { id, name, status, rating, contact, performance, vehicle, license }
+ * 
+ * @param {object} [options] - Optional settings, e.g. { signal } for AbortController.
  */
-async function getDrivers() {
+async function getDrivers(options = {}) {
   try {
-    const response = await api.get('http://localhost:8000/api/v1/users/drivers/Available');
+    const response = await api.get(
+      'http://localhost:8000/api/v1/users/drivers/Available',
+      { signal: options.signal }
+    );
     if (response.ok && response.data?.success) {
-      // ── Map each backend driver record to the rich object the UI renders ──
-      return response.data.data.map(d => ({
-        // ── Identity ──────────────────────────────────────────────────────
-        id: d.driver_id ?? d.id ?? 'unknown',
-        name: d.name || d.user?.name || "Unknown Driver",
-        status: d.status ?? 'Available',
-        rating: d.rating ?? 'N/A',
-
-        // ── Contact info ─────────────────────────────────────────────────
-        contact: {
-          phone: d.user?.phone ?? d.phone ?? 'N/A',
-          email: d.user?.email ?? d.email ?? 'N/A',
-        },
-
-        // ── Performance metrics ───────────────────────────────────────────
-        performance: {
-          safetyScore: d.score ?? 0,
-          totalDeliveries: d.total_deliveries ?? 0,
-          onTimeRate: d.on_time_rate ?? 0,
-        },
-
-        // ── Assigned vehicle ─────────────────────────────────────────────
-        vehicle: {
-          id: d.vehicle?.vehicle_id ?? d.vehicle_id ?? 'Unassigned',
-          type: d.vehicle?.VehicleType ?? d.vehicle_type ?? 'N/A',
-          plate: d.vehicle?.VehicleLicense ?? d.vehicle_plate ?? 'N/A',
-        },
-
-        // ── License details ───────────────────────────────────────────────
-        license: {
-          number: d.license_no ?? 'N/A',
-          expiry: d.license_expiry ?? 'N/A',
-        },
-      }));
+      // Return raw backend data directly as requested
+      return response.data.data;
     }
     return [];
   } catch (error) {
+    if (error?.name === 'AbortError') {
+      console.debug('[DriverStorage] getDrivers() aborted.');
+      throw error;
+    }
     console.error('[DriverStorage] API Error in getDrivers():', error);
     return [];
   }

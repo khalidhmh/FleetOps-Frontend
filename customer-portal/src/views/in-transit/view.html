@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <div class="it-view">
     <header class="it-header">
         <div class="it-header-left">
@@ -12,18 +13,9 @@
         </div>
     </header>
 
+    <!-- Real Leaflet Map -->
     <div class="it-map-wrapper">
-        <div class="it-map-canvas">
-            <div class="it-street s1"></div>
-            <div class="it-street s2"></div>
-            <div class="it-marker it-marker--driver">
-                <div class="it-driver-bubble"><i class="bi bi-truck"></i><span>Ahmed</span></div>
-            </div>
-            <div class="it-marker it-marker--user">
-                <span class="it-user-pulse"></span><i class="bi bi-geo-alt-fill"></i>
-            </div>
-        </div>
-        <button class="it-map-btn"><i class="bi bi-crosshair"></i></button>
+        <div id="tracking-map" class="it-leaflet-map"></div>
     </div>
 
     <div class="it-content-body">
@@ -69,4 +61,5 @@
             </div>
         </div>
     </div>
-</div> ```
+</div>
+

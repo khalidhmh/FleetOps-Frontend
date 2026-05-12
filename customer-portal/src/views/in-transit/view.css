@@ -7,15 +7,31 @@
 .it-pulse-dot { width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 1.5s infinite; }
 
 /* Map */
-.it-map-wrapper { height: 260px; position: relative; background: #e2e8f0; overflow: hidden; }
-.it-map-canvas { position: absolute; inset: 0; background: #cbd5e1; }
-.it-street { position: absolute; background: white; opacity: 0.5; }
-.it-street.s1 { top: 30%; width: 100%; height: 10px; transform: rotate(-5deg); }
-.it-street.s2 { left: 40%; height: 100%; width: 10px; transform: rotate(10deg); }
+.it-map-wrapper { height: 260px; position: relative; overflow: hidden; }
+.it-leaflet-map { width: 100%; height: 100%; z-index: 1; }
 
-.it-driver-bubble { background: white; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-md); position: absolute; top: 40%; left: 30%; }
-.it-driver-bubble i { color: var(--accent-primary); }
-.it-marker--user { position: absolute; bottom: 30%; right: 40%; color: var(--accent-primary); font-size: 1.5rem; }
+/* Driver marker icon */
+.it-lf-driver-icon {
+  background: var(--accent-primary, #0d9488);
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  border: 2px solid white;
+}
+
+/* Destination pin icon */
+.it-lf-dest-icon {
+  color: #ef4444;
+  font-size: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
 
 /* Content */
 .it-content-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 100px; margin-top: -20px; z-index: 10; }

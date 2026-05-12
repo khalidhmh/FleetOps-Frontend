@@ -549,3 +549,102 @@ function _esc(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
 }
+
+// ─── Toast Notification ───────────────────────────────────────────────────────
+
+const TOAST_CONTAINER_ID = "fo-toast-container";
+
+function _ensureToastStyles() {
+    if (document.getElementById("fo-toast-styles")) return;
+    const css = `
+#${TOAST_CONTAINER_ID} {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+.fo-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: var(--font-family, 'Inter', sans-serif);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.18);
+    pointer-events: auto;
+    min-width: 260px;
+    max-width: 380px;
+    transform: translateX(110%);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
+}
+.fo-toast.fo-toast--visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+.fo-toast--success { background: #0f766e; }
+.fo-toast--error   { background: #b91c1c; }
+.fo-toast--info    { background: #0d9488; }
+.fo-toast__icon { font-size: 17px; flex-shrink: 0; }
+.fo-toast__msg  { flex: 1; line-height: 1.4; }
+    `;
+    const style = document.createElement("style");
+    style.id = "fo-toast-styles";
+    style.textContent = css;
+    document.head.appendChild(style);
+}
+
+function _getToastContainer() {
+    let container = document.getElementById(TOAST_CONTAINER_ID);
+    if (!container) {
+        container = document.createElement("div");
+        container.id = TOAST_CONTAINER_ID;
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+/**
+ * showToast(message, type, duration)
+ *
+ * Displays a self-dismissing toast notification in the bottom-right corner.
+ *
+ * @param {string} message   — Text to display.
+ * @param {'success'|'error'|'info'} [type='success']  — Colour variant.
+ * @param {number} [duration=3500]  — Auto-dismiss delay in milliseconds.
+ */
+export function showToast(message, type = "success", duration = 3500) {
+    _ensureToastStyles();
+    const container = _getToastContainer();
+
+    const icons = { success: "✓", error: "✕", info: "ℹ" };
+
+    const toast = document.createElement("div");
+    toast.className = `fo-toast fo-toast--${type}`;
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    toast.innerHTML = `
+        <span class="fo-toast__icon" aria-hidden="true">${icons[type] ?? icons.info}</span>
+        <span class="fo-toast__msg">${_esc(message)}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger enter animation on next frame
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => toast.classList.add("fo-toast--visible"));
+    });
+
+    // Auto-dismiss
+    setTimeout(() => {
+        toast.classList.remove("fo-toast--visible");
+        toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+    }, duration);
+}

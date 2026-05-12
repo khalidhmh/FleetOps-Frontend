@@ -270,6 +270,18 @@
     font: inherit;
 }
 
+.tracking-link-chip:hover:not(.is-disabled):not([disabled]) {
+    background: #d5f3ef;
+}
+
+/* Fallback when backend hasn't issued a tracking token yet */
+.tracking-link-chip.is-disabled {
+    background: #f1f4f8;
+    color: #9aaac0;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
 .notify-chip.is-danger {
     background: #fff1f1;
     color: #ff4d4f;
@@ -514,6 +526,44 @@
     color: var(--color-primary-dim);
     text-decoration: none;
     font-weight: 800;
+    word-break: break-all;
+}
+
+/* No-link state — shown when the backend hasn't issued a token yet */
+.tracking-banner--no-link {
+    background: #f8fafc;
+    border-color: rgba(15, 23, 42, 0.1);
+    color: #64758f;
+}
+
+.tracking-banner--no-link i {
+    color: #94a3b8;
+}
+
+.tracking-banner__no-link {
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.tracking-banner__pending-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Transient "Copied!" confirmation state on the Copy button */
+.button.is-copied {
+    background: #059669 !important;
+    color: #ffffff !important;
+    transition: background 0.15s ease, color 0.15s ease;
+    pointer-events: none;
 }
 
 .tab-strip {

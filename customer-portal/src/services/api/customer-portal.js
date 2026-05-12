@@ -44,23 +44,65 @@ const api = {
     }
 };
 
-// ─── Token helper ─────────────────────────────────────────────────────────────
+// ─── Token helpers ────────────────────────────────────────────────────────────
 
 /**
- * Retrieves the customer's tracking token from the URL hash or query string.
- * The Laravel backend embeds it in the magic link: /track?token=<uuid>
- * Falls back to a token stored in sessionStorage by the entry view.
+ * getTrackingToken()
+ *
+ * Resolves the customer's tracking token with the following priority:
+ *   1. URL query string  ?token=   (canonical magic-link format)
+ *   2. URL query string  ?tracking_code=  (alternate backend format)
+ *   3. URL query string  ?code=    (short alias)
+ *   4. URL hash fragment  #token=  (some email clients strip query strings)
+ *   5. sessionStorage    cp_token  (persisted from a previous step)
+ *
+ * Any token found via 1-4 is immediately persisted to sessionStorage so
+ * subsequent views on the same session can resolve it without the URL.
  *
  * @returns {string|null}
  */
 function getTrackingToken() {
+    // ── 1-3. Standard query-string params ──────────────────────────────────
     const params = new URLSearchParams(window.location.search);
-    const tokenFromURL = params.get('token');
+    const tokenFromURL =
+        params.get('token') ??
+        params.get('tracking_code') ??
+        params.get('code');
+
     if (tokenFromURL) {
         sessionStorage.setItem('cp_token', tokenFromURL);
         return tokenFromURL;
     }
+
+    // ── 4. URL hash  (#token=...) ─────────────────────────────────────────
+    if (window.location.hash) {
+        const hashParams = new URLSearchParams(
+            window.location.hash.replace(/^#/, '')
+        );
+        const tokenFromHash =
+            hashParams.get('token') ??
+            hashParams.get('tracking_code') ??
+            hashParams.get('code');
+
+        if (tokenFromHash) {
+            sessionStorage.setItem('cp_token', tokenFromHash);
+            return tokenFromHash;
+        }
+    }
+
+    // ── 5. sessionStorage fallback ────────────────────────────────────────
     return sessionStorage.getItem('cp_token');
+}
+
+/**
+ * clearTrackingToken()
+ *
+ * Removes the persisted token from sessionStorage.
+ * Call this in destroy() hooks when the session ends (e.g. after
+ * delivery confirmed or link-expired view is shown).
+ */
+function clearTrackingToken() {
+    sessionStorage.removeItem('cp_token');
 }
 
 // ─── API Methods ──────────────────────────────────────────────────────────────
@@ -107,7 +149,8 @@ async function validateToken(token) {
 async function fetchOrder(token) {
     const t = token ?? getTrackingToken();
     if (!t) {
-        console.error('[CustomerPortalAPI] No tracking token available.');
+        // Expected when the view is loaded without going through /track first.
+        console.warn('[CustomerPortalAPI] fetchOrder: no tracking token — returning null.');
         return null;
     }
     const { data } = await api.get(`/customer-portal/orders/${t}`);
@@ -127,10 +170,31 @@ async function fetchOrder(token) {
 async function fetchTracking(token) {
     const t = token ?? getTrackingToken();
     if (!t) {
-        console.error('[CustomerPortalAPI] No tracking token available.');
+        // Expected when the view is loaded without going through /track first.
+        console.warn('[CustomerPortalAPI] fetchTracking: no tracking token — returning null.');
         return null;
     }
     const { data } = await api.get(`/customer-portal/orders/${t}/tracking`);
+    return data;
+}
+
+/**
+ * fetchTrackingByCode(trackingCode)
+ * GET /api/v1/customer/tracking/{tracking_code}
+ *
+ * Entry-point fetch used by the /track dispatcher view.
+ * Uses the v1 route format where the code is part of the path (not a
+ * token embedded in the order URL).
+ *
+ * Response shape (expected):
+ *   { status, orderId, driver, eta, timeline, preferences, ... }
+ *
+ * @param {string} trackingCode  The UUID / code from the magic link.
+ * @returns {Promise<object>}    Tracking payload.
+ * @throws  {Error}              On any non-2xx HTTP response.
+ */
+async function fetchTrackingByCode(trackingCode) {
+    const { data } = await api.get(`/v1/customer/tracking/${trackingCode}`);
     return data;
 }
 
@@ -194,10 +258,12 @@ async function notifyDriverReady(token) {
 
 const CustomerPortalAPI = {
     getTrackingToken,
+    clearTrackingToken,
     fetchSupportInfo,
     validateToken,
     fetchOrder,
     fetchTracking,
+    fetchTrackingByCode,
     savePreferences,
     submitFeedback,
     notifyDriverReady,
@@ -205,10 +271,12 @@ const CustomerPortalAPI = {
 
 export {
     getTrackingToken,
+    clearTrackingToken,
     fetchSupportInfo,
     validateToken,
     fetchOrder,
     fetchTracking,
+    fetchTrackingByCode,
     savePreferences,
     submitFeedback,
     notifyDriverReady,

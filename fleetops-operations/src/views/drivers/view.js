@@ -5,6 +5,11 @@ let escListener = null;
 let performanceChartInstance = null;
 let statusChartInstance = null;
 
+let _mounted = false;
+let _fetchAbortController = null;
+let _docListeners = [];
+let currentFilter = 'All';
+
 function loadChartJS() {
   return new Promise((resolve, reject) => {
     if (window.Chart) {
@@ -24,12 +29,19 @@ export async function mount() {
   
   if (!gridContainer) return;
 
+  _fetchAbortController?.abort();
+  _fetchAbortController = new AbortController();
+  _mounted = true;
+
   try {
     gridContainer.innerHTML = `<div class="helper-text">Loading drivers...</div>`;
     await loadChartJS();
-    driversData = await DriverStorage.getDrivers();
     
-    renderDrivers(driversData);
+    driversData = await DriverStorage.getDrivers({ signal: _fetchAbortController?.signal });
+    
+    if (!_mounted) return;
+    
+    renderDrivers(getFilteredDrivers());
     // Pass driversData so the chart counts are calculated dynamically
     renderCharts(driversData);
 
@@ -37,27 +49,93 @@ export async function mount() {
     
     document.getElementById("close-modal-btn")?.addEventListener("click", closeModal);
     
+    initFilters();
+
+    // Delegated click listener for driver cards
+    const cardClickHandler = (e) => {
+      const card = e.target.closest('.driver-card');
+      if (card) {
+        const id = card.getAttribute('data-driver-id');
+        const driver = driversData.find(d => (d.driver_id || d.id) == id);
+        if (driver) openDriverModal(driver);
+      }
+    };
+    gridContainer.addEventListener('click', cardClickHandler);
+    _docListeners.push({ type: 'click', fn: cardClickHandler }); // Track for cleanup
+
     const overlay = document.getElementById("driver-modal-overlay");
     if (overlay) {
-      overlay.addEventListener("click", (e) => {
+      const overlayClickHandler = (e) => {
         // Only close if clicking the overlay itself, not the panel
         if (e.target === overlay) {
           closeModal();
         }
-      });
+      };
+      overlay.addEventListener("click", overlayClickHandler);
+      _docListeners.push({ type: 'click', fn: overlayClickHandler });
     }
 
-    escListener = (e) => {
+    const escListener = (e) => {
       if (e.key === "Escape") {
         closeModal();
       }
     };
     document.addEventListener("keydown", escListener);
+    _docListeners.push({ type: "keydown", fn: escListener });
 
   } catch (error) {
+    if (error?.name === 'AbortError') return;
     console.error("Failed to load drivers:", error);
-    gridContainer.innerHTML = `<div class="helper-text error-text">Error loading drivers.</div>`;
+    if (_mounted) {
+      gridContainer.innerHTML = `<div class="helper-text error-text">Error loading drivers.</div>`;
+    }
   }
+}
+
+function getFilteredDrivers() {
+  const searchInput = document.getElementById("drivers-search");
+  const query = searchInput ? searchInput.value.toLowerCase() : '';
+  
+  return driversData.filter(d => {
+    // 1. Check status filter
+    if (currentFilter !== 'All' && currentFilter.toUpperCase() !== 'ALL' && 
+        d.status?.toUpperCase() !== currentFilter.toUpperCase()) {
+      return false;
+    }
+    
+    // 2. Check search query
+    if (query) {
+      const name = d.user?.name || d.name || "";
+      const id = d.driver_id || d.id || "";
+      return name.toLowerCase().includes(query) || 
+             id.toLowerCase().includes(query) ||
+             (d.license_no && d.license_no.toLowerCase().includes(query));
+    }
+    
+    return true;
+  });
+}
+
+function initFilters() {
+  const filterContainer = document.querySelector('.filter-chips');
+  if (!filterContainer) return;
+  
+  const buttons = filterContainer.querySelectorAll('button');
+  buttons.forEach(btn => {
+    // Make sure we only attach the listener once.
+    btn.onclick = (e) => {
+      // Update active classes
+      buttons.forEach(b => {
+        b.classList.remove('success');
+        b.classList.add('neutral');
+      });
+      e.target.classList.remove('neutral');
+      e.target.classList.add('success');
+      
+      currentFilter = e.target.textContent.trim();
+      renderDrivers(getFilteredDrivers());
+    };
+  });
 }
 
 function renderDrivers(data) {
@@ -69,7 +147,7 @@ function renderDrivers(data) {
   const onRouteDrivers = data.filter(d => d.status === 'On Route' || d.status === 'Active').length;
   const availableDrivers = data.filter(d => d.status === 'Available').length;
   const avgScore = totalDrivers > 0 
-      ? Math.round(data.reduce((sum, d) => sum + (d.performance?.safetyScore || 0), 0) / totalDrivers) 
+      ? Math.round(data.reduce((sum, d) => sum + (d.score || 0), 0) / totalDrivers) 
       : 0;
       
   // Update Header Count
@@ -92,117 +170,112 @@ function renderDrivers(data) {
   }
   
   gridContainer.innerHTML = data.map(driver => {
+    const status = driver.status || 'Offline';
     let statusColorClass = 'status-off-duty';
-    if (driver.status === 'Active' || driver.status === 'On Route') statusColorClass = 'status-on-route';
-    else if (driver.status === 'Available') statusColorClass = 'status-available';
-    else if (driver.status === 'On Break') statusColorClass = 'status-on-break';
+    if (status === 'Active' || status === 'On Route') statusColorClass = 'status-on-route';
+    else if (status === 'Available') statusColorClass = 'status-available';
+    else if (status === 'On Break') statusColorClass = 'status-on-break';
     
-    let chipClass = driver.status === 'Active' || driver.status === 'On Route' || driver.status === 'Available' ? 'success' : 'neutral';
+    let chipClass = status === 'Active' || status === 'On Route' || status === 'Available' ? 'success' : 'neutral';
     
-    // Get initials
-    const initials = driver.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+    // Get initials safely
+    const name = driver.user?.name || driver.name || "Unknown";
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() || "U";
+    const id = driver.driver_id || driver.id || "N/A";
+    const phone = driver.user?.phone_no || driver.phone || "N/A";
+    const ratingStr = driver.average_rating != null ? driver.average_rating : (driver.score != null ? (Number(driver.score)/20).toFixed(1) : "N/A");
 
     return `
-      <div class="card driver-card stack ${statusColorClass}" data-driver-id="${driver.id}">
+      <div class="card driver-card stack ${statusColorClass}" data-driver-id="${id}">
         <div class="row driver-card-header">
           <div class="row">
             <div class="avatar-circle">${initials}</div>
             <div class="stack driver-info">
-              <strong class="heading-md">${driver.name}</strong>
-              <span class="helper-text">${driver.id.toUpperCase()}</span>
+              <strong class="heading-md">${name}</strong>
+              <span class="helper-text">${id.toUpperCase()}</span>
             </div>
           </div>
           <div class="stack driver-score">
-            <span class="chip ${chipClass}">${driver.status || 'Offline'}</span>
-            <strong class="text-primary heading-md">${driver.performance?.safetyScore || "N/A"}</strong>
+            <span class="chip ${chipClass}">${status}</span>
+            <strong class="text-primary heading-md">${driver.score || "N/A"}</strong>
             <span class="helper-text m-0">Safety</span>
           </div>
         </div>
         
         <div class="row mt-2">
-           <span class="helper-text">📞 ${driver.contact?.phone || 'N/A'}</span>
+           <span class="helper-text">📞 ${phone}</span>
         </div>
         
         <hr class="card-divider" />
         
         <div class="row driver-metrics">
-           <div class="stack metric-item"><strong class="heading-md">${driver.performance?.totalDeliveries || 0}</strong><span class="helper-text m-0">Deliveries</span></div>
-           <div class="stack metric-item"><strong class="heading-md">${driver.performance?.onTimeRate || 0}%</strong><span class="helper-text m-0">On-Time</span></div>
-           <div class="stack metric-item"><strong class="heading-md">${driver.rating || 'N/A'}</strong><span class="helper-text m-0">Rating</span></div>
+           <div class="stack metric-item"><strong class="heading-md">${driver.total_deliveries || driver.deliveries || 0}</strong><span class="helper-text m-0">Deliveries</span></div>
+           <div class="stack metric-item"><strong class="heading-md">${driver.on_time_percentage || driver.onTime || '0%'}</strong><span class="helper-text m-0">On-Time</span></div>
+           <div class="stack metric-item"><strong class="heading-md">${ratingStr}</strong><span class="helper-text m-0">Rating</span></div>
         </div>
         
         <div class="row assigned-vehicle-box">
-           <span class="helper-text m-0">🚚 ${driver.vehicle?.id !== "Unassigned" ? `${driver.vehicle?.id} (${driver.vehicle?.type})` : "Unassigned"}</span>
+           <span class="helper-text m-0">🚚 ${driver.vehicle_id ? driver.vehicle_id : 'Unassigned'}</span>
         </div>
       </div>
     `;
   }).join('');
-  
-  // Attach click listeners to cards
-  document.querySelectorAll('.driver-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      const id = e.currentTarget.getAttribute('data-driver-id');
-      const driver = driversData.find(d => d.id === id);
-      if (driver) hydrateModal(driver);
-    });
-  });
 }
 
 function handleSearch(e) {
-  const query = e.target.value.toLowerCase();
-  const filtered = driversData.filter(d => 
-    d.name.toLowerCase().includes(query) || 
-    d.id.toLowerCase().includes(query) ||
-    (d.license?.number && d.license.number.toLowerCase().includes(query))
-  );
-  renderDrivers(filtered);
+  renderDrivers(getFilteredDrivers());
 }
 
-function hydrateModal(driver) {
-  // Safe generic selector hydration
+function openDriverModal(driver) {
+  const modal = document.getElementById("driver-modal-overlay");
+  if (!modal) return;
+
+  // Safe generic selector hydration explicitly within THIS modal's DOM tree
   const safelyHydrate = (selector, text) => {
-    const el = document.querySelector(selector);
+    const el = modal.querySelector(selector);
     if (el) el.textContent = text;
   };
 
-  safelyHydrate('.modal-name', driver.name);
-  safelyHydrate('.modal-id', driver.id.toUpperCase());
-  safelyHydrate('.modal-phone', driver.contact?.phone || '');
-  safelyHydrate('.modal-email', driver.contact?.email || '');
-  
-  safelyHydrate('.modal-license', driver.license?.number || "N/A");
-  safelyHydrate('.modal-type', driver.vehicle?.type || "N/A");
-  safelyHydrate('.modal-expiry', driver.license?.expiry || "N/A");
-  
-  safelyHydrate('.modal-vehicle-id', driver.vehicle?.id || "N/A");
-  safelyHydrate('.modal-vehicle-plate', driver.vehicle?.plate || "N/A");
+  const id = driver.driver_id || driver.id || "N/A";
+  const name = driver.user?.name || driver.name || "Unknown";
+  const phone = driver.user?.phone_no || driver.phone || "";
+  const ratingStr = driver.average_rating != null ? driver.average_rating : (driver.score != null ? (Number(driver.score)/20).toFixed(1) : "N/A");
 
-  safelyHydrate('.modal-safety-score', `${driver.performance?.safetyScore || 0}/100`);
-  safelyHydrate('.modal-total-deliveries', driver.performance?.totalDeliveries || 0);
-  safelyHydrate('.modal-on-time-rate', `${driver.performance?.onTimeRate || 0}%`);
-  safelyHydrate('.modal-rating', driver.rating || "N/A");
+  safelyHydrate('.modal-name', name);
+  safelyHydrate('.modal-id', id.toUpperCase());
+  safelyHydrate('.modal-phone', phone);
+  safelyHydrate('.modal-email', driver.user?.email || driver.email || 'N/A');
+  
+  safelyHydrate('.modal-license', driver.license_no || "N/A");
+  safelyHydrate('.modal-type', driver.license_type || "N/A");
+  safelyHydrate('.modal-expiry', driver.license_expiry || "N/A");
+  
+  safelyHydrate('.modal-vehicle-id', driver.vehicle_id || "N/A");
+  safelyHydrate('.modal-vehicle-plate', driver.vehicle?.plate || driver.vehicle_plate || "N/A");
+
+  safelyHydrate('.modal-safety-score', `${driver.score || 0}/100`);
+  safelyHydrate('.modal-total-deliveries', driver.total_deliveries || driver.deliveries || 0);
+  safelyHydrate('.modal-on-time-rate', driver.on_time_percentage || driver.onTime || '0%');
+  safelyHydrate('.modal-rating', ratingStr);
 
   // Handle badges specifically
-  const statusEl = document.querySelector(".modal-status");
+  const statusEl = modal.querySelector(".modal-status");
   if (statusEl) {
     statusEl.textContent = driver.status || "Offline";
     statusEl.className = `chip modal-status ${driver.status === 'Active' || driver.status === 'On Route' ? 'success' : 'neutral'}`;
   }
   
-  const dutyStatusEl = document.querySelector(".modal-duty-status");
+  const dutyStatusEl = modal.querySelector(".modal-duty-status");
   if (dutyStatusEl) {
     dutyStatusEl.textContent = driver.status || "Offline";
     dutyStatusEl.className = `chip modal-duty-status ${driver.status === 'Active' || driver.status === 'On Route' ? 'success' : 'neutral'}`;
   }
 
-  const initials = driver.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
   safelyHydrate('.modal-avatar', initials);
   
   // Show modal
-  const overlay = document.getElementById("driver-modal-overlay");
-  if (overlay) {
-    overlay.classList.add("open");
-  }
+  modal.classList.add("open");
 }
 
 function closeModal() {
@@ -213,18 +286,24 @@ function closeModal() {
 }
 
 export function unmount() {
+  _mounted = false;
+  _fetchAbortController?.abort();
+  _fetchAbortController = null;
+
   document.getElementById("drivers-search")?.removeEventListener("input", handleSearch);
   document.getElementById("close-modal-btn")?.removeEventListener("click", closeModal);
   
-  const overlay = document.getElementById("driver-modal-overlay");
-  if (overlay) {
-    overlay.removeEventListener("click", closeModal);
+  const filterContainer = document.querySelector('.filter-chips');
+  if (filterContainer) {
+    filterContainer.querySelectorAll('button').forEach(btn => {
+      btn.onclick = null;
+    });
   }
 
-  if (escListener) {
-    document.removeEventListener("keydown", escListener);
-    escListener = null;
-  }
+  _docListeners.forEach(({ type, fn }) => {
+    document.removeEventListener(type, fn);
+  });
+  _docListeners.length = 0;
 }
 
 /**

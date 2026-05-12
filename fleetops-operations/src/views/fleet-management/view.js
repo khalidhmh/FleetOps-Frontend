@@ -3,7 +3,7 @@
    FleetOps Operations · Vanilla JS Logic (SPA-ready)
 ════════════════════════════════════════════════ */
 
-import { showNotificationPanel } from '../../utils/notification-ui.js';
+import { showNotificationPanel, showToast } from '../../utils/notification-ui.js';
 import api from '/shared/api-handler.js'; // ← Real API handler (absolute path served by dev server)
 
 // تعديل البورت لـ 8000 عشان يكلم لارفيل
@@ -11,6 +11,8 @@ api.setBaseURL('http://localhost:8000');
 
 
 // ─── 1. Data ──────────────────────────────────────────────────────────────
+
+let _docListeners = [];
 
 /* // ── Hardcoded mock data — commented out; replaced by fetchFleetData() below ──
 const FLEET_DATA_MOCK = [
@@ -85,47 +87,117 @@ const FLEET_DATA_MOCK = [
 let FLEET_DATA = [];
 
 /**
+ * _mounted
+ *
+ * True while this view is the active SPA route, false after destroy().
+ * All async callbacks that modify FLEET_DATA or the DOM must guard on
+ * this flag before doing any work — equivalent to React's isMounted
+ * pattern or checking if an AbortController signal was aborted.
+ *
+ * @type {boolean}
+ */
+let _mounted = false;
+
+/**
+ * _fetchAbortController
+ *
+ * An AbortController whose signal is passed to fetch calls inside
+ * fetchFleetData(). abort() is called inside unmount() so any in-flight
+ * GET /fleet/vehicles request is cancelled immediately when the user
+ * navigates away, preventing the response callback from touching the DOM.
+ *
+ * A new controller is created on every mount so re-entering the view
+ * works correctly.
+ *
+ * @type {AbortController|null}
+ */
+let _fetchAbortController = null;
+
+/**
  * Fetches vehicles from the backend API and maps the response to the
  * UI-expected shape, then updates the module-level FLEET_DATA array.
  *
- * Backend shape: { vehicle_id, VehicleLicense, VehicleType, Current_odometer, Status, ... }
- * UI shape:      { id, plate, type, odometer, status, maxWeight, maxVolume, ... }
+ * Actual backend shape (snake_case):
+ *   { id, plate, type, max_weight, max_volume, odometer, status,
+ *     mechanic, market_value, last_service, ... }
+ *
+ * UI shape (camelCase):
+ *   { id, plate, type, maxWeight, maxVolume, odometer (formatted),
+ *     status, mechanic, marketValue (formatted), lastService, ... }
+ */
+/**
+ * Fetches vehicles from the backend API and maps the response to the
+ * UI-expected shape, then updates the module-level FLEET_DATA array.
+ *
+ * Abort-safe: passes the current _fetchAbortController.signal so the
+ * in-flight request is cancelled if the user navigates away mid-fetch.
+ * After any await, checks _mounted before modifying module state.
+ *
+ * Actual backend shape (snake_case):
+ *   { id, plate, vehicle_model, type, max_weight, max_volume, odometer,
+ *     status, mechanic, market_value, last_service, ... }
+ *
+ * UI shape (camelCase):
+ *   { id, plate, vehicleModel, type, maxWeight, maxVolume,
+ *     odometer (formatted), status, mechanic, marketValue (formatted),
+ *     lastService, ... }
  */
 async function fetchFleetData() {
+  // Snapshot the controller at call-time; abort() may replace it while we await.
+  const signal = _fetchAbortController?.signal;
+
   try {
-    const response = await api.get('http://localhost:8000/api/v1/dispatch/fleet/vehicles');
+    const response = await api.get(
+      'http://localhost:8000/api/v1/dispatch/fleet/vehicles',
+      { signal }            // api-handler must forward this to fetch()
+    );
+
+    // If the view was unmounted while the request was in-flight, discard
+    // the result silently rather than writing to stale module state.
+    if (!_mounted) return;
+
     if (response.ok && response.data?.success) {
       FLEET_DATA = response.data.data.map(v => ({
         // ── Identity & Classification ────────────────────────────────────
-        id: v.vehicle_id ?? v.id ?? 'N/A',
-        plate: v.VehicleLicense ?? 'N/A',
-        type: v.VehicleType ?? 'N/A',
+        id:           v.id    ?? 'N/A',
+        plate:        v.plate ?? 'N/A',
+        vehicleModel: v.vehicle_model ?? 'N/A',
+        type:         v.type  ? (v.type.charAt(0).toUpperCase() + v.type.slice(1)) : 'N/A',
 
-        // ── Operational fields ────────────────────────────────────────────
-        odometer: v.Current_odometer
-          ? `${Number(v.Current_odometer).toLocaleString()} km`
+        // ── Capacity ──────────────────────────────────────────────────────
+        maxWeight: v.max_weight != null ? `${v.max_weight} kg` : 'N/A',
+        maxVolume: v.max_volume != null ? `${v.max_volume} m³` : 'N/A',
+
+        // ── Operational ──────────────────────────────────────────────────
+        odometer: v.odometer != null
+          ? `${Number(v.odometer).toLocaleString()} km`
           : 'N/A',
-        status: v.Status ?? v.status ?? 'Unknown',
-        mechanic: v.mechanic ?? null,
+        status:      v.status   ?? 'Unknown',
+        mechanic:    (v.mechanic && v.mechanic.trim() !== '') ? v.mechanic : null,
         damageReport: v.damage_report ?? null,
 
-        // ── Capacity (backend may not provide these; fall back gracefully) ─
-        maxWeight: v.max_weight ? `${v.max_weight} kg` : 'N/A',
-        maxVolume: v.max_volume ? `${v.max_volume} m³` : 'N/A',
-
-        // ── Financial & compliance ────────────────────────────────────────
-        marketValue: v.market_value
+        // ── Financial & Compliance ────────────────────────────────────────
+        marketValue: v.market_value != null
           ? `SAR ${Number(v.market_value).toLocaleString()}`
           : 'N/A',
-        lastService: v.last_service ?? v.updated_at?.split('T')[0] ?? 'N/A',
-        insurance: v.insurance_expiry ?? 'N/A',
+        lastService: (v.last_service && v.last_service.trim() !== '')
+          ? v.last_service
+          : (v.updated_at?.split('T')[0] ?? 'N/A'),
+
+        // ── Documents (not yet provided by backend — graceful fallback) ───
+        insurance:  v.insurance_expiry  ?? 'N/A',
         inspection: v.inspection_expiry ?? 'N/A',
       }));
     } else {
-      console.warn('[FleetOps] fetchFleetData: API returned non-success response.');
+      if (_mounted) console.warn('[FleetOps] fetchFleetData: API returned non-success response.');
     }
   } catch (error) {
-    console.error('[FleetOps] fetchFleetData error:', error);
+    // AbortError is expected on navigation — don't log it as an error.
+    if (error?.name === 'AbortError') {
+      console.debug('[FleetOps] fetchFleetData: request aborted (navigation).');
+      return;
+    }
+    if (_mounted) console.error('[FleetOps] fetchFleetData error:', error);
   }
 }
 
@@ -141,6 +213,7 @@ const MECHANICS = [
 let currentFilter = 'All';
 let selectedMechanic = null;
 let currentVehicleId = null;
+let editingVehicleId = null;
 // ─── Charts Logic ───
 let odoChartInstance = null;
 let fuelChartInstance = null;
@@ -295,72 +368,308 @@ function initSearch() {
 }
 
 // ─── 7. Add Vehicle Modal ─────────────────────────────────────────────────
-function initAddVehicleModal() {
+
+/**
+ * Form state — collected from the modal fields on each submission.
+ * @type {{ plate:string, vehicleModel:string, type:string, maxWeight:string, maxVolume:string, odometer:string, marketValue:string }}
+ */
+let _addVehicleState = {};
+
+/**
+ * showFieldError(fieldId, message)
+ *
+ * Injects (or updates) an inline error message beneath a form field.
+ * Clears it if message is falsy.
+ *
+ * @param {string} fieldId
+ * @param {string|null} message
+ */
+function showFieldError(fieldId, message) {
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+
+  // Find or create the error element
+  const errorId = `${fieldId}-error`;
+  let errorEl = document.getElementById(errorId);
+
+  if (!message) {
+    input.classList.remove('form-input--error');
+    errorEl?.remove();
+    return;
+  }
+
+  if (!errorEl) {
+    errorEl = document.createElement('p');
+    errorEl.id = errorId;
+    errorEl.className = 'form-field-error';
+    input.parentNode.appendChild(errorEl);
+  }
+
+  input.classList.add('form-input--error');
+  errorEl.textContent = message;
+}
+
+/**
+ * clearAllErrors(modal)
+ *
+ * Removes all inline validation errors and the modal-level error banner.
+ */
+function clearAllErrors(modal) {
+  modal.querySelectorAll('.form-input--error').forEach(el => el.classList.remove('form-input--error'));
+  modal.querySelectorAll('.form-field-error').forEach(el => el.remove());
+  const banner = modal.querySelector('#modalErrorBanner');
+  if (banner) banner.setAttribute('hidden', '');
+}
+
+/**
+ * handleAddVehicle(close)
+ *
+ * Async submit handler wired to the "Save Vehicle" button.
+ *
+ * Flow:
+ *   1. Read & validate form inputs → show inline errors on failure.
+ *   2. Build snake_case payload matching the backend's expected shape.
+ *   3. POST to /api/v1/dispatch/fleet/vehicles via the api-handler.
+ *   4a. On success → show success toast, close modal, re-fetch fleet list.
+ *   4b. On error  → show per-field errors (if 422) or a banner message.
+ *
+ * Backend payload shape (snake_case):
+ *   { plate, type, max_weight, max_volume, odometer, market_value }
+ *
+ * @param {Function} close  — Modal close callback.
+ * @param {Element}  modal  — Modal DOM element (for error display).
+ * @param {Element}  saveBtn — Save button (for loading state management).
+ */
+async function handleAddVehicle(close, modal, saveBtn) {
+  clearAllErrors(modal);
+
+  // ── 1. Collect state from form inputs ──────────────────────────────
+  _addVehicleState = {
+    plate:        document.getElementById('fieldPlate')?.value?.trim()        ?? '',
+    vehicleModel: document.getElementById('fieldVehicleModel')?.value?.trim() ?? '',
+    type:         document.getElementById('fieldType')?.value                 ?? 'light',
+    maxWeight:    document.getElementById('fieldMaxWeight')?.value?.trim()    ?? '',
+    maxVolume:    document.getElementById('fieldMaxVolume')?.value?.trim()    ?? '',
+    odometer:     document.getElementById('fieldOdometer')?.value?.trim()     ?? '',
+    marketValue:  document.getElementById('fieldMarketValue')?.value?.trim()  ?? '',
+  };
+
+  const { plate, vehicleModel, type, maxWeight, maxVolume, odometer, marketValue } = _addVehicleState;
+
+  // ── 2. Client-side validation ────────────────────────────────────────
+  let hasErrors = false;
+
+  if (!plate) {
+    showFieldError('fieldPlate', 'Plate number is required.');
+    hasErrors = true;
+  }
+  if (!vehicleModel) {
+    showFieldError('fieldVehicleModel', 'Vehicle model is required.');
+    hasErrors = true;
+  }
+  if (!maxWeight || isNaN(Number(maxWeight)) || Number(maxWeight) <= 0) {
+    showFieldError('fieldMaxWeight', 'Enter a valid max weight (kg).');
+    hasErrors = true;
+  }
+  if (!maxVolume || isNaN(Number(maxVolume)) || Number(maxVolume) <= 0) {
+    showFieldError('fieldMaxVolume', 'Enter a valid max volume (m³).');
+    hasErrors = true;
+  }
+
+  if (hasErrors) return;
+
+  // ── 3. Map to backend snake_case payload ─────────────────────────────
+  //    Frontend camelCase   →  Backend snake_case
+  //    vehicleModel         →  vehicle_model  (string, NOT NULL in DB)
+  //    maxWeight            →  max_weight     (number)
+  //    maxVolume            →  max_volume     (number)
+  //    marketValue          →  market_value   (number, optional)
+  //    odometer             →  odometer       (number, optional)
+  //    type                 →  type           (lowercase string)
+  const payload = {
+    plate,
+    vehicle_model: vehicleModel,
+    type:          type.toLowerCase(),
+    max_weight:    Number(maxWeight),
+    max_volume:    Number(maxVolume),
+    odometer:      odometer    ? Number(odometer)    : 0,
+    market_value:  marketValue ? Number(marketValue) : null,
+  };
+
+  // ── 4. PUT BUTTON INTO LOADING STATE ────────────────────────────────
+  const originalLabel = saveBtn.textContent;
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+  saveBtn.classList.add('btn-save--loading');
+
+  // ── 5. POST/PUT to the backend ──────────────────────────────────────
+  try {
+    const isEdit = !!editingVehicleId;
+    const url = isEdit 
+      ? `http://localhost:8000/api/v1/dispatch/fleet/vehicles/${editingVehicleId}` 
+      : 'http://localhost:8000/api/v1/dispatch/fleet/vehicles';
+
+    const response = isEdit 
+      ? await api.put(url, payload) 
+      : await api.post(url, payload);
+
+    if (response.ok && response.data?.success) {
+      // ── 5a. SUCCESS ────────────────────────────────────────────────
+      close();
+      showToast(isEdit ? 'Vehicle updated successfully!' : 'Vehicle added successfully!', 'success');
+
+      // Re-fetch the full fleet list so the table reflects the real DB state.
+      // Guard with _mounted so a rapid navigation away won't call renderTable()
+      // on a detached DOM.
+      await fetchFleetData();
+      if (_mounted) renderTable();
+
+    } else {
+      // ── 5b. Non-success 2xx ────────────────────────────────────────
+      const msg = response.data?.message ?? 'The server rejected the request.';
+      _showModalErrorBanner(modal, msg);
+    }
+
+  } catch (err) {
+    // ── 5c. HTTP 422 Validation errors ─────────────────────────────────
+    if (err?.status === 422 || err?.message?.includes('422')) {
+      const errors = err?.data?.errors ?? {};
+
+      // Map Laravel field names → our HTML field IDs
+      const FIELD_MAP = {
+        plate:         'fieldPlate',
+        vehicle_model: 'fieldVehicleModel',
+        type:          'fieldType',
+        max_weight:    'fieldMaxWeight',
+        max_volume:    'fieldMaxVolume',
+        odometer:      'fieldOdometer',
+        market_value:  'fieldMarketValue',
+      };
+
+      let hasFieldErrors = false;
+      for (const [apiField, fieldId] of Object.entries(FIELD_MAP)) {
+        if (errors[apiField]) {
+          showFieldError(fieldId, errors[apiField][0]);
+          hasFieldErrors = true;
+        }
+      }
+
+      if (!hasFieldErrors) {
+        _showModalErrorBanner(modal, 'Validation failed. Please check all fields.');
+      }
+
+    } else if (err instanceof TypeError) {
+      // Network / CORS failure
+      _showModalErrorBanner(
+        modal,
+        'Could not reach the server. Check your connection and try again.'
+      );
+    } else {
+      // Other HTTP error (500, 403, etc.)
+      const msg = err?.data?.message ?? err?.message ?? 'An unexpected error occurred.';
+      _showModalErrorBanner(modal, msg);
+    }
+
+  } finally {
+    // ── 6. RESTORE BUTTON STATE ─────────────────────────────────────────
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalLabel;
+    saveBtn.classList.remove('btn-save--loading');
+  }
+}
+
+/** Shows the modal-level error banner with a given message. */
+function _showModalErrorBanner(modal, message) {
+  let banner = modal.querySelector('#modalErrorBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'modalErrorBanner';
+    banner.className = 'modal-error-banner';
+    // Insert before the footer
+    const footer = modal.querySelector('.modal-footer');
+    footer ? modal.querySelector('.modal-card').insertBefore(banner, footer) : modal.querySelector('.modal-card').appendChild(banner);
+  }
+  banner.textContent = message;
+  banner.removeAttribute('hidden');
+}
+
+export function openEditVehicleModal(id) {
   const modal = document.getElementById('modalOverlay');
-  const openBtn = document.getElementById('openModalBtn');
-  const closeBtn = document.getElementById('closeModalBtn');
+  if (!modal) return;
+  
+  const vehicle = FLEET_DATA.find(v => v.id == id);
+  if (!vehicle) return;
+
+  editingVehicleId = id;
+  
+  // Update modal title explicitly within this modal's DOM tree
+  const title = modal.querySelector('.modal-title');
+  if (title) title.textContent = 'Edit Vehicle';
+  
+  // Populate fields
+  const plate = modal.querySelector('#fieldPlate');
+  if (plate) plate.value = vehicle.plate || '';
+  
+  const vModel = modal.querySelector('#fieldVehicleModel');
+  if (vModel) vModel.value = vehicle.vehicleModel || '';
+  
+  const type = modal.querySelector('#fieldType');
+  if (type) type.value = vehicle.type ? vehicle.type.toLowerCase() : 'light';
+  
+  const weight = modal.querySelector('#fieldMaxWeight');
+  if (weight) weight.value = vehicle.maxWeight ? vehicle.maxWeight.replace(' kg', '') : '';
+  
+  const volume = modal.querySelector('#fieldMaxVolume');
+  if (volume) volume.value = vehicle.maxVolume ? vehicle.maxVolume.replace(' m³', '') : '';
+  
+  const odo = modal.querySelector('#fieldOdometer');
+  if (odo) odo.value = vehicle.odometer ? vehicle.odometer.replace(/,/g, '').replace(' km', '') : '';
+  
+  const market = modal.querySelector('#fieldMarketValue');
+  if (market) market.value = vehicle.marketValue ? vehicle.marketValue.replace('SAR ', '').replace(/,/g, '') : '';
+  
+  clearAllErrors(modal);
+  
+  // Show modal
+  modal.removeAttribute('hidden');
+  requestAnimationFrame(() => modal.classList.add('is-open'));
+}
+
+function initAddVehicleModal() {
+  const modal     = document.getElementById('modalOverlay');
+  const openBtn   = document.getElementById('openModalBtn');
+  const closeBtn  = document.getElementById('closeModalBtn');
   const cancelBtn = document.getElementById('cancelModalBtn');
-  const saveBtn = document.getElementById('saveVehicleBtn');
+  const saveBtn   = document.getElementById('saveVehicleBtn');
   if (!modal || !openBtn) return;
 
   const clearForm = () => {
-    modal.querySelectorAll('.form-input').forEach(i => (i.value = ''));
+    modal.querySelectorAll('.form-input, .form-select').forEach(i => (i.value = ''));
     const typeSelect = document.getElementById('fieldType');
     if (typeSelect) typeSelect.selectedIndex = 0;
+    clearAllErrors(modal);
   };
 
-  const open = () => { modal.removeAttribute('hidden'); requestAnimationFrame(() => modal.classList.add('is-open')); };
-  const close = () => { modal.classList.remove('is-open'); setTimeout(() => { modal.setAttribute('hidden', ''); clearForm(); }, 200); };
+  const open  = () => { modal.removeAttribute('hidden'); requestAnimationFrame(() => modal.classList.add('is-open')); };
+  const close = () => {
+    modal.classList.remove('is-open');
+    setTimeout(() => { modal.setAttribute('hidden', ''); clearForm(); }, 200);
+  };
 
-  openBtn.onclick = open;
-  if (closeBtn) closeBtn.onclick = close;
+  openBtn.onclick = () => {
+    editingVehicleId = null;
+    const title = modal.querySelector('.modal-title');
+    if (title) title.textContent = 'Add New Vehicle';
+    clearForm();
+    open();
+  };
+  if (closeBtn)  closeBtn.onclick  = close;
   if (cancelBtn) cancelBtn.onclick = close;
   modal.onclick = (e) => { if (e.target === modal) close(); };
+
   if (saveBtn) {
-    saveBtn.onclick = () => {
-      // 1. تجميع البيانات من الفورم
-      const plate = document.getElementById('fieldPlate')?.value?.trim();
-      const weight = document.getElementById('fieldMaxWeight')?.value?.trim();
-      const volume = document.getElementById('fieldMaxVolume')?.value?.trim();
-      const type = document.getElementById('fieldType')?.value;
-
-      // سحب قيم الحقول الجديدة
-      const odometer = document.getElementById('fieldOdometer')?.value?.trim();
-      const marketValue = document.getElementById('fieldMarketValue')?.value?.trim();
-
-      if (!plate) { alert('Please enter a Plate Number.'); return; }
-
-      // 2. عمل ID جديد
-      const newIdNum = FLEET_DATA.length + 1;
-      const newId = `V-${String(newIdNum).padStart(3, '0')}`;
-      const today = new Date().toISOString().split('T')[0];
-
-      // 3. بناء هيكل بيانات العربية الجديدة مع القيم الجديدة
-      const newVehicle = {
-        id: newId,
-        plate: plate,
-        type: type || 'Light',
-        maxWeight: weight ? `${weight} kg` : '-',
-        maxVolume: volume ? `${volume} m³` : '-',
-        // لو دخل رقم هنحطله فواصل وكلمة km، لو مدخلش هيبقى 0
-        odometer: odometer ? `${Number(odometer).toLocaleString()} km` : '0 km',
-        status: 'Available',
-        mechanic: null,
-        // لو دخل رقم هنحطله SAR، لو مدخلش هيبقى SAR —
-        marketValue: marketValue ? `SAR ${Number(marketValue).toLocaleString()}` : 'SAR —',
-        lastService: today,
-        damageReport: null,
-        insurance: 'N/A',
-        inspection: 'N/A'
-      };
-
-      // 4. إضافة العربية في أول الجدول وتحديث الـ UI
-      FLEET_DATA.unshift(newVehicle);
-      renderTable();
-
-      // 5. قفل المودال (close سيقوم بتفريغ الحقول تلقائيًا)
-      close();
-    };
+    // Replace onclick with the async API handler
+    saveBtn.onclick = () => handleAddVehicle(close, modal, saveBtn);
   }
 }
 
@@ -465,16 +774,47 @@ function initAssignMechanicModal() {
 // ─── 9. Vehicle Details Modal ─────────────────────────────────────────────
 
 /**
- * Generates plausible 6-month odometer readings based on the raw odometer string.
+ * Fetches the rich vehicle detail from the backend detail endpoint.
+ * Returns the API data object on success, or null on failure.
+ *
+ * Backend: GET /api/v1/dispatch/fleet/vehicles/{id}
+ * Requires auth:sanctum — passes existing session token via api handler.
+ *
+ * @param {string} vehicleId  — the vehicle id from FLEET_DATA (e.g. "3")
+ * @returns {Promise<object|null>}
+ */
+async function fetchVehicleDetail(vehicleId) {
+  const signal = _fetchAbortController?.signal;
+  try {
+    const response = await api.get(
+      `http://localhost:8000/api/v1/dispatch/fleet/vehicles/${vehicleId}`,
+      { signal }
+    );
+    if (response.ok && response.data?.success) {
+      return response.data.data;
+    }
+    console.warn('[FleetOps] fetchVehicleDetail: non-success response', response.data);
+    return null;
+  } catch (err) {
+    if (err?.name === 'AbortError') return null;
+    console.error('[FleetOps] fetchVehicleDetail error:', err);
+    return null;
+  }
+}
+
+/**
+ * Fallback: Generates plausible 6-month odometer readings from the display string.
+ * Used only when the detail API call fails.
  */
 function buildOdometerHistory(odoStr) {
   const current = parseInt(odoStr.replace(/[^0-9]/g, ''), 10) || 100000;
-  const monthlyGain = Math.round(current * 0.04); // ~4% per month
+  const monthlyGain = Math.round(current * 0.04);
   return Array.from({ length: 6 }, (_, i) => current - (5 - i) * monthlyGain);
 }
 
 /**
- * Generates plausible fuel efficiency values (7–11 km/L range with small variance).
+ * Fallback: Generates plausible fuel efficiency values.
+ * Used only when the detail API call fails.
  */
 function buildFuelHistory(type) {
   const base = type === 'Heavy' ? 7.5 : type === 'Refrigerated' ? 8.2 : 9.8;
@@ -521,6 +861,19 @@ function destroyCharts() {
   if (odoChartInstance) { odoChartInstance.destroy(); odoChartInstance = null; }
   if (fuelChartInstance) { fuelChartInstance.destroy(); fuelChartInstance = null; }
 }
+/**
+ * Render both charts.
+ *
+ * @param {object} vehicle  – local FLEET_DATA item (may be enriched by fetchVehicleDetail)
+ *
+ * Priority for chart data:
+ *   1. vehicle.odometerHistory  / vehicle.fuelHistory   ← from API detail endpoint
+ *   2. Fallback helpers buildOdometerHistory / buildFuelHistory
+ *
+ * Priority for x-axis labels:
+ *   1. vehicle.chartMonths  ← from API (last 6 real calendar months)
+ *   2. CHART_MONTHS constant  ← static fallback
+ */
 function buildCharts(vehicle) {
   destroyCharts();
 
@@ -545,14 +898,21 @@ function buildCharts(vehicle) {
     },
   };
 
-  // ── Odometer Line Chart ──
+  // Use API-provided month labels if available, otherwise fall back to constant
+  const months = (vehicle.chartMonths?.length === 6) ? vehicle.chartMonths : CHART_MONTHS;
+
+  // ── Odometer Line Chart ──────────────────────────────────────────────────
   const odoCtx = document.getElementById('odoChart');
   if (odoCtx) {
-    const odoData = buildOdometerHistory(vehicle.odometer);
+    // Prefer real API history; fall back to the generator
+    const odoData = (vehicle.odometerHistory?.length === 6)
+      ? vehicle.odometerHistory
+      : buildOdometerHistory(vehicle.odometer);
+
     odoChartInstance = new Chart(odoCtx, {
       type: 'line',
       data: {
-        labels: CHART_MONTHS,
+        labels: months,
         datasets: [{
           data: odoData,
           borderColor: CHART_DEFAULTS.teal,
@@ -583,14 +943,18 @@ function buildCharts(vehicle) {
     });
   }
 
-  // ── Fuel Efficiency Bar Chart ──
+  // ── Fuel Efficiency Bar Chart ────────────────────────────────────────────
   const fuelCtx = document.getElementById('fuelChart');
   if (fuelCtx) {
-    const fuelData = buildFuelHistory(vehicle.type);
+    // Prefer real API history; fall back to the generator
+    const fuelData = (vehicle.fuelHistory?.length === 6)
+      ? vehicle.fuelHistory
+      : buildFuelHistory(vehicle.type);
+
     fuelChartInstance = new Chart(fuelCtx, {
       type: 'bar',
       data: {
-        labels: CHART_MONTHS,
+        labels: months,
         datasets: [{
           data: fuelData,
           backgroundColor: CHART_DEFAULTS.teal,
@@ -650,28 +1014,32 @@ function initVehicleDetailsModal(openAssignModalFn) {
     };
   }
 
-  const open = (vehicleId) => {
+  /**
+   * Open the detail modal for the given vehicle ID.
+   * Fetches the rich detail payload from the backend (charts, docs) then renders.
+   * Falls back gracefully to FLEET_DATA values if the detail fetch fails.
+   */
+  const open = async (vehicleId) => {
     const v = FLEET_DATA.find(x => x.id === vehicleId);
     if (!v) return;
 
-    // ── Populate header
-    const plateEl = document.getElementById('detailsPlate');
-    const badgeEl = document.getElementById('detailsStatusBadge');
+    // ── Populate header immediately (data already in FLEET_DATA) ──────────
+    const plateEl    = document.getElementById('detailsPlate');
+    const badgeEl    = document.getElementById('detailsStatusBadge');
     const subtitleEl = document.getElementById('detailsSubtitle');
     if (plateEl) plateEl.textContent = v.plate;
     if (badgeEl) {
       badgeEl.textContent = v.status;
-      badgeEl.className = `details-status-badge ${statusToBadgeClass(v.status)}`;
+      badgeEl.className   = `details-status-badge ${statusToBadgeClass(v.status)}`;
     }
     if (subtitleEl) subtitleEl.textContent = `${v.type} · ${v.id}`;
 
-    // ── Damage Report Banner (conditional)
-    const banner = document.getElementById('detailsDamageBanner');
+    // ── Damage Report Banner ───────────────────────────────────────────────
+    const banner    = document.getElementById('detailsDamageBanner');
     const damageText = document.getElementById('detailsDamageText');
     if (banner) {
       if (v.status === 'Damaged' && v.damageReport) {
         if (damageText) damageText.textContent = v.damageReport;
-        // Store the vehicleId on the button so the click handler can use it
         if (assignNowBtn) assignNowBtn.dataset.vehicleId = v.id;
         banner.removeAttribute('hidden');
       } else {
@@ -679,22 +1047,48 @@ function initVehicleDetailsModal(openAssignModalFn) {
       }
     }
 
-    // ── Populate stats
     const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    setText('detailsStatStatus', v.status);
+
+    // ── Populate stats with FLEET_DATA values (instant, no flicker) ───────
+    setText('detailsStatStatus',   v.status);
     setText('detailsStatOdometer', v.odometer);
-    setText('detailsStatValue', v.marketValue);
-    setText('detailsStatService', v.lastService);
+    setText('detailsStatValue',    v.marketValue);
+    setText('detailsStatService',  v.lastService !== 'N/A' ? v.lastService : '—');
+    setText('detailsInsurance',    v.insurance  || 'Loading…');
+    setText('detailsInspection',   v.inspection || 'Loading…');
 
-    // ── Populate documents
-    setText('detailsInsurance', v.insurance || 'N/A');
-    setText('detailsInspection', v.inspection || 'N/A');
+    // ── Fetch detail from API (chart data + document dates) ───────────────
+    const detail = await fetchVehicleDetail(v.id);
 
-    // ── Open modal, then load Chart.js (if needed) and render charts
+    if (detail) {
+      // Enrich the vehicle object in-place so buildCharts() can read the arrays
+      v.odometerHistory = detail.odometer_history   ?? null;
+      v.fuelHistory     = detail.fuel_efficiency_history ?? null;
+      v.chartMonths     = detail.chart_months        ?? null;
+
+      // Overwrite docs with the real computed dates from the API
+      const insurance  = detail.insurance_expiry  ?? v.insurance  ?? 'N/A';
+      const inspection = detail.inspection_expiry ?? v.inspection ?? 'N/A';
+      v.insurance  = insurance;
+      v.inspection = inspection;
+
+      // last_service is guaranteed non-null by VehicleDetailResource
+      if (detail.last_service) v.lastService = detail.last_service;
+
+      // Re-populate the stats & documents cells with enriched values
+      setText('detailsStatService', v.lastService);
+      setText('detailsInsurance',   insurance);
+      setText('detailsInspection',  inspection);
+    } else {
+      // API failed — show whatever we have (may be 'N/A')
+      setText('detailsInsurance',  v.insurance  || 'N/A');
+      setText('detailsInspection', v.inspection || 'N/A');
+    }
+
+    // ── Open modal, then render charts after layout is ready ─────────────
     modal.removeAttribute('hidden');
     requestAnimationFrame(() => {
       modal.classList.add('is-open');
-      // Slight delay so canvas has layout dimensions, then ensure Chart.js is loaded
       setTimeout(() => loadChartJS(() => buildCharts(v)), 80);
     });
   };
@@ -702,9 +1096,11 @@ function initVehicleDetailsModal(openAssignModalFn) {
   if (closeBtn) closeBtn.onclick = close;
   modal.onclick = (e) => { if (e.target === modal) close(); };
 
-  document.addEventListener('keydown', (e) => {
+  const escapeHandler = (e) => {
     if (e.key === 'Escape' && !modal.hasAttribute('hidden')) close();
-  });
+  };
+  document.addEventListener('keydown', escapeHandler);
+  _docListeners.push({ type: 'keydown', fn: escapeHandler });
 
   return open;
 }
@@ -726,8 +1122,13 @@ function initTableDelegation(openDetailsModal, openAssignModal) {
     // Assign mechanic button — don't open details
     if (e.target.closest('.assign-btn')) return;
 
-    // Edit button — don't open details
-    if (e.target.closest('.btn-edit')) return;
+    // Edit button
+    const editBtn = e.target.closest('.btn-edit');
+    if (editBtn) {
+      e.stopPropagation();
+      openEditVehicleModal(editBtn.dataset.id);
+      return;
+    }
 
     // Click anywhere else on the row → open details
     const row = e.target.closest('tr[data-id]');
@@ -744,47 +1145,78 @@ function handleGlobalClicks(e) {
 // ─── 12. Entry Point ─────────────────────────────────────────────────────
 
 /**
- * Main initialiser — now async so it can await the fleet data fetch
+ * Main initialiser — async so it can await the fleet data fetch
  * before rendering the table.
+ *
+ * Mount/unmount safety:
+ *   _mounted is set to true here and false in unmount().
+ *   _fetchAbortController is created fresh on every mount so its signal
+ *   is clean. The previous controller (if any) is aborted first to cancel
+ *   any lingering in-flight request from a previous mount cycle.
  */
-export async function initFleetManagement() {
-  console.log('[FleetOps] Initializing Fleet Management module…');
+export async function mount() {
+  console.log('[FleetOps] Mounting Fleet Management module…');
+
+  // ── Mount guard setup ────────────────────────────────────────────────
+  // Cancel any request that might still be running from a previous mount.
+  _fetchAbortController?.abort();
+  _fetchAbortController = new AbortController();
+  _mounted = true;
 
   document.removeEventListener('click', handleGlobalClicks);
   document.addEventListener('click', handleGlobalClicks);
+  _docListeners.push({ type: 'click', fn: handleGlobalClicks });
 
-  // ── Fetch real data from the API before first render ──
+  // ── Fetch real data from the API before first render ──────────────────
   await fetchFleetData();
+
+  // Guard: user may have navigated away while fetchFleetData() was awaited.
+  if (!_mounted) return;
 
   renderTable();
   initFilters();
   initSearch();
   initAddVehicleModal();
 
-  const openAssignModal = initAssignMechanicModal();
+  const openAssignModal  = initAssignMechanicModal();
   const openDetailsModal = initVehicleDetailsModal(openAssignModal);
 
   initTableDelegation(openDetailsModal, openAssignModal);
 
   // Assign-btn delegation for table rows (wrench icon / "Assign Mechanic" buttons)
-  document.addEventListener('click', (e) => {
+  const assignBtnHandler = (e) => {
     const btn = e.target.closest('.assign-btn');
     if (btn && btn.dataset.id) openAssignModal?.(btn.dataset.id);
-  });
+  };
+  document.addEventListener('click', assignBtnHandler);
+  _docListeners.push({ type: 'click', fn: assignBtnHandler });
 }
 
-// SPA-aware boot — uses .then() so the async Promise is properly handled
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initFleetManagement());
-} else {
-  initFleetManagement();
-}
 
 export function unmount() {
-    // Remove all document-level listeners added during mount
-    _docListeners.forEach(({ type, fn, opts }) => {
-        document.removeEventListener(type, fn, opts);
-    });
-    _docListeners.length = 0;
-    destroyCharts();
+  // ── 1. Signal "component is gone" to all pending async callbacks ──────
+  //    Any fetchFleetData() / fetchVehicleDetail() awaits that complete
+  //    after this point will see _mounted === false and return early
+  //    without touching the DOM or module state.
+  _mounted = false;
+
+  // ── 2. Cancel the in-flight GET /fleet/vehicles request (if any) ──────
+  //    This triggers an AbortError inside fetchFleetData(), which is
+  //    caught and logged as a debug message rather than an error.
+  _fetchAbortController?.abort();
+  _fetchAbortController = null;
+
+  // ── 3. Remove document-level event listeners added during mount ────────
+  _docListeners.forEach(({ type, fn, opts }) => {
+    document.removeEventListener(type, fn, opts);
+  });
+  _docListeners.length = 0;
+
+  // ── 4. Destroy Chart.js instances to release canvas memory ────────────
+  destroyCharts();
+
+  // ── 5. Clear Module State ──────────────────────────────────────────────
+  FLEET_DATA = [];
+  currentFilter = 'All';
+  _addVehicleState = {};
 }

@@ -751,3 +751,61 @@ input, select, textarea { font-family: inherit; }
   height: 180px; 
   width: 100%;
 }
+
+/* ════════════════════════════════════════════════
+   ADD VEHICLE MODAL — VALIDATION FEEDBACK
+════════════════════════════════════════════════ */
+
+/* Input error ring — applied by showFieldError() */
+.form-input--error,
+.form-select--error {
+  border-color: var(--red-600) !important;
+  background: var(--red-50) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, .10) !important;
+}
+
+/* Inline field-level error text */
+.form-field-error {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--red-700);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-field-error::before {
+  content: '⚠';
+  font-size: 11px;
+}
+
+/* Modal-level error banner — shown by _showModalErrorBanner() */
+.modal-error-banner {
+  margin: 0 24px 0;
+  padding: 11px 16px;
+  background: var(--red-50);
+  border: 1px solid var(--red-100);
+  border-left: 4px solid var(--red-600);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--red-700);
+  line-height: 1.5;
+}
+
+.modal-error-banner[hidden] { display: none !important; }
+
+/* Save button loading state */
+.btn-save--loading {
+  opacity: .75;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-save:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}

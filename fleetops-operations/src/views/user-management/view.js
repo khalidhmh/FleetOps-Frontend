@@ -93,7 +93,18 @@ function openModal(user = null) {
     document.getElementById("modal-name").value = user?.fullName ?? "";
     document.getElementById("modal-email").value = user?.email ?? "";
     document.getElementById("modal-phone").value = user?.phone ?? "";
-    
+
+    // تصفير حقول الباسورد دايماً عند فتح المودال وتغيير الرسالة التوضيحية
+    const passInput = document.getElementById("modal-password");
+    const passConfirmInput = document.getElementById("modal-password-confirmation");
+    if (passInput) {
+        passInput.value = "";
+        passInput.placeholder = user ? "Leave empty to keep current password" : "Enter new password";
+    }
+    if (passConfirmInput) {
+        passConfirmInput.value = "";
+    }
+
     const roleSelect = document.getElementById("modal-role");
     if (roleSelect) {
         let roleVal = user?.role || "";
@@ -125,7 +136,7 @@ const roleMap = {
 
 async function saveModal() {
     const rawRole = document.getElementById("modal-role")?.value?.toLowerCase();
-    
+
     const payload = {
         name: document.getElementById("modal-name")?.value.trim(),
         email: document.getElementById("modal-email")?.value.trim(),
@@ -134,14 +145,32 @@ async function saveModal() {
         status: document.getElementById("modal-status")?.value,
     };
 
-    if (!_editingId) {
-        payload.password = "password123";
-        payload.password_confirmation = "password123";
+    // سحب قيم الباسورد من واجهة المستخدم
+    const password = document.getElementById("modal-password")?.value;
+    const passwordConfirm = document.getElementById("modal-password-confirmation")?.value;
+
+    // التحقق من الحقول الأساسية
+    if (!payload.name || !payload.email || !payload.role) {
+        alert("Please fill required fields (Name, Email, Role).");
+        return;
     }
 
-    if (!payload.name || !payload.email || !payload.role) {
-        alert("Please fill required fields.");
+    // التحقق من الباسورد في حالة اليوزر الجديد
+    if (!_editingId && !password) {
+        alert("Password is required for new users.");
         return;
+    }
+
+    // التحقق من تطابق الباسورد
+    if (password && password !== passwordConfirm) {
+        alert("Passwords do not match.");
+        return;
+    }
+
+    // إضافة الباسورد للبيانات المرسلة لو تم كتابته
+    if (password) {
+        payload.password = password;
+        payload.password_confirmation = passwordConfirm;
     }
 
     const submitBtn = document.getElementById("modal-save-btn");
@@ -167,14 +196,14 @@ async function saveModal() {
 async function toggleUserStatus(id) {
     const user = _users.find((u) => String(u.id) === String(id));
     if (!user) return;
-    
+
     const newStatus = user.status === "active" ? "inactive" : "active";
-    
+
     const payload = {
         name: user.fullName,
         email: user.email,
         phone: user.phone === '--' ? '' : user.phone,
-        role: user.role, 
+        role: user.role,
         status: newStatus
     };
 

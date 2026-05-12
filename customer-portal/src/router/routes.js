@@ -1,4 +1,16 @@
 export const routes = [
+    // ── Magic-link entry point ─────────────────────────────────────────────
+    // Reached via: /track?token=<uuid>
+    // Fetches tracking data and redirects to the correct status view.
+    {
+        path: '/track',
+        title: 'Tracking Your Order | FleetOps',
+        view: {
+            html: 'src/views/tracking/view.html',
+            css:  'src/views/tracking/view.css',
+            js:   'src/views/tracking/view.js',
+        },
+    },
     {
         path: '/order-confirmed',
         title: 'Order Confirmed | FleetOps',
