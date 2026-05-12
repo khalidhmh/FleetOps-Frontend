@@ -10,6 +10,7 @@ let currentFilter = "active";
 let orderCards = [];
 let rootElement = null;
 let clickHandler = null;
+let mountToken = 0;
 
 function formatDateLabel(dateString) {
     const date = new Date(dateString);
@@ -100,6 +101,19 @@ function renderCards() {
     container.innerHTML = filtered.map(buildCard).join("");
 }
 
+function renderMessage(message) {
+    const container = rootElement?.querySelector("#mwo-cards");
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="mwo-card">
+            <p>${message}</p>
+        </div>
+    `;
+}
+
 function handlePageClick(event) {
     const tabButton = event.target.closest(".mwo-tab");
     if (tabButton && tabButton.dataset.tab) {
@@ -123,19 +137,39 @@ function handlePageClick(event) {
     }
 }
 
-export function mount(outlet) {
+export async function mount(outlet) {
+    const token = ++mountToken;
     rootElement = outlet.querySelector(".mwo-page");
     if (!rootElement) {
         return;
     }
 
-    orderCards = MyWorkOrdersApi.getAllWorkOrders();
     rootElement.querySelector("#mwo-date").textContent = new Date().toLocaleDateString("en-GB", {
         weekday: "long",
         day: "2-digit",
         month: "long",
         year: "numeric",
     });
+
+    renderMessage("Loading your work orders...");
+
+    try {
+        orderCards = await MyWorkOrdersApi.getAllWorkOrders();
+    } catch (error) {
+        if (token !== mountToken) {
+            return;
+        }
+
+        console.error("[MyWorkOrders] Failed to load work orders:", error);
+        orderCards = [];
+        renderCounts();
+        renderMessage("Could not load your work orders. Please try again.");
+        return;
+    }
+
+    if (token !== mountToken) {
+        return;
+    }
 
     renderTabs();
     renderCounts();
@@ -146,6 +180,7 @@ export function mount(outlet) {
 }
 
 export function unmount(outlet) {
+    mountToken += 1;
     if (rootElement && clickHandler) {
         rootElement.removeEventListener("click", clickHandler);
     }

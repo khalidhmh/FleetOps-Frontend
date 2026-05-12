@@ -7,10 +7,14 @@ import {
 let cleanupFns = [];
 let state = null;
 
+const PAGE_SIZE = 10;
+
 export async function mount() {
     state = {
         activeStatus: "All",
         addForm: null,
+        currentPage: 1,
+        importFile: null,
         importFileName: "",
         modal: null,
         orders: [],
@@ -38,6 +42,7 @@ function bindPageEvents() {
     const searchInput = document.getElementById("orders-search-input");
     const filters = document.getElementById("orders-filters");
     const tbody = document.getElementById("orders-table-body");
+    const pagination = document.getElementById("orders-pagination");
     const importButton = document.getElementById("import-orders-btn");
     const addButton = document.getElementById("add-order-btn");
     const exportButton = document.getElementById("export-orders-btn");
@@ -46,6 +51,7 @@ function bindPageEvents() {
     searchInput?.addEventListener("input", handleSearchInput);
     filters?.addEventListener("click", handleFilterClick);
     tbody?.addEventListener("click", handleTableClick);
+    pagination?.addEventListener("click", handlePaginationClick);
     importButton?.addEventListener("click", openImportModal);
     addButton?.addEventListener("click", openAddModal);
     exportButton?.addEventListener("click", handleExport);
@@ -65,6 +71,7 @@ function bindPageEvents() {
         () => searchInput?.removeEventListener("input", handleSearchInput),
         () => filters?.removeEventListener("click", handleFilterClick),
         () => tbody?.removeEventListener("click", handleTableClick),
+        () => pagination?.removeEventListener("click", handlePaginationClick),
         () => importButton?.removeEventListener("click", openImportModal),
         () => addButton?.removeEventListener("click", openAddModal),
         () => exportButton?.removeEventListener("click", handleExport),
@@ -121,12 +128,16 @@ function renderFilters() {
 function renderTable() {
     const tbody = document.getElementById("orders-table-body");
     const footer = document.getElementById("orders-table-footer");
+    const pagination = document.getElementById("orders-pagination");
 
-    if (!tbody || !footer) {
+    if (!tbody || !footer || !pagination) {
         return;
     }
 
     const filteredOrders = getFilteredOrders();
+    const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
+    state.currentPage = Math.min(state.currentPage, totalPages);
+    const pagedOrders = paginate(filteredOrders, state.currentPage, PAGE_SIZE);
 
     if (!filteredOrders.length) {
         tbody.innerHTML = `
@@ -143,21 +154,19 @@ function renderTable() {
             </tr>
         `;
         footer.textContent = "Showing 0 orders";
+        pagination.innerHTML = "";
         return;
     }
 
-    tbody.innerHTML = filteredOrders.map(renderOrderRow).join("");
-    footer.textContent = `Showing ${filteredOrders.length} of ${state.orders.length} orders`;
+    tbody.innerHTML = pagedOrders.map(renderOrderRow).join("");
+
+    const start = (state.currentPage - 1) * PAGE_SIZE + 1;
+    const end = Math.min(start + PAGE_SIZE - 1, filteredOrders.length);
+    footer.textContent = `Showing ${start}-${end} of ${filteredOrders.length} orders`;
+    pagination.innerHTML = renderPagination(totalPages);
 }
 
 function renderOrderRow(order) {
-    const notificationClass =
-        order.notificationsSummary.failed > 0 ? "notify-chip is-danger" : "notify-chip";
-    const notificationValue =
-        order.notificationsSummary.failed > 0
-            ? `0/${order.notificationsSummary.total}`
-            : `${order.notificationsSummary.sent}/${order.notificationsSummary.total}`;
-
     return `
         <tr data-order-id="${order.id}">
             <td class="orders-table__check">
@@ -172,17 +181,12 @@ function renderOrderRow(order) {
             </td>
             <td><span class="order-cell-stack"><span>${order.address}</span></span></td>
             <td><strong>${formatWeight(order.weightKg)}</strong></td>
+            <td><strong>${order.volumeM3} m3</strong></td>
             <td><strong>${order.paymentType}</strong></td>
             <td>${renderPriorityBadge(order.priority)}</td>
             <td><span>${order.paymentWindow}</span></td>
             <td>${renderStatusBadge(order.status)}</td>
             <td>${renderDriverCell(order)}</td>
-            <td>
-                <button class="${notificationClass}" type="button" data-action="open-order" data-order-id="${order.id}">
-                    <i data-lucide="${order.notificationsSummary.failed > 0 ? "bell-off" : "bell"}"></i>
-                    <span>${notificationValue}</span>
-                </button>
-            </td>
             <td>
                 <button class="tracking-link-chip" type="button" data-action="open-order" data-order-id="${order.id}">
                     <i data-lucide="square-arrow-out-up-right"></i>
@@ -203,10 +207,33 @@ function renderDriverCell(order) {
             <span class="driver-pill__avatar">${order.driver.initials}</span>
             <span class="driver-pill__meta">
                 <strong>${order.driver.name}</strong>
-                <span>${order.driver.code}</span>
             </span>
         </span>
     `;
+}
+
+function renderPagination(totalPages) {
+    const buttons = [];
+    buttons.push(
+        `<button class="page-btn" type="button" data-page-action="prev" ${state.currentPage === 1 ? "disabled" : ""}><i data-lucide="chevron-left"></i></button>`,
+    );
+
+    for (let page = 1; page <= totalPages; page += 1) {
+        buttons.push(`
+            <button
+                class="page-btn ${page === state.currentPage ? "is-active" : ""}"
+                type="button"
+                data-page="${page}">
+                ${page}
+            </button>
+        `);
+    }
+
+    buttons.push(
+        `<button class="page-btn" type="button" data-page-action="next" ${state.currentPage === totalPages ? "disabled" : ""}><i data-lucide="chevron-right"></i></button>`,
+    );
+
+    return buttons.join("");
 }
 
 function renderModal() {
@@ -240,8 +267,7 @@ function renderDetailsModal(order) {
         return "";
     }
 
-    const activeTab = state.modal?.tab ?? "live";
-    const tabContent = renderOrderTabContent(order, activeTab);
+    const timelineContent = renderOrderTimeline(order);
 
     return `
         <div class="modal-overlay" data-modal-close="overlay">
@@ -275,27 +301,7 @@ function renderDetailsModal(order) {
                         ${renderInfoCard("map-pin", "Weight / Volume", `${formatWeight(order.weightKg)} / ${order.volumeM3} m3`, order.createdAt)}
                     </section>
 
-                    <section class="tracking-banner">
-                        <div class="tracking-banner__left">
-                            <i data-lucide="square-arrow-out-up-right"></i>
-                            <div class="tracking-banner__copy">
-                                <strong>Live Tracking Link (sent to customer automatically)</strong>
-                                <a href="${order.trackingLink}" target="_blank" rel="noreferrer">${order.trackingLink}</a>
-                            </div>
-                        </div>
-                        <button class="button primary" type="button" data-action="copy-link" data-link="${order.trackingLink}">
-                            <i data-lucide="copy"></i>
-                            <span>Copy</span>
-                        </button>
-                    </section>
-
-                    <section class="tab-strip">
-                        <button class="tab-button ${activeTab === "live" ? "is-active" : ""}" type="button" data-tab="live">Live Tracking</button>
-                        <button class="tab-button ${activeTab === "notifications" ? "is-active" : ""}" type="button" data-tab="notifications">Notifications</button>
-                        <button class="tab-button ${activeTab === "timeline" ? "is-active" : ""}" type="button" data-tab="timeline">Timeline</button>
-                    </section>
-
-                    ${tabContent}
+                    ${timelineContent}
                 </div>
             </section>
         </div>
@@ -315,85 +321,31 @@ function renderInfoCard(icon, label, value, meta) {
     `;
 }
 
-function renderOrderTabContent(order, activeTab) {
-    if (activeTab === "notifications") {
-        return `
-            <section class="tab-panel">
-                <p class="muted-copy">Notifications are sent automatically when an order is added to the system. Each status change also triggers a notification.</p>
-                ${order.notifications
+function renderOrderTimeline(order) {
+    return `
+        <section class="tab-panel">
+            <div class="timeline-list">
+                ${order.timeline
                     .map(
                         (item) => `
-                            <article class="notification-card">
-                                <div class="notification-card__main">
-                                    <div class="notification-card__icon">
-                                        <i data-lucide="${item.icon}"></i>
-                                    </div>
-                                    <div class="notification-card__content">
-                                        <strong>${item.channel}</strong>
-                                        <span>Sent at: ${item.sentAt}</span>
-                                        <p>Content: ${item.content}</p>
+                            <article class="timeline-card">
+                                <div class="timeline-card__main">
+                                    <span class="timeline-marker">
+                                        <i data-lucide="clock-3"></i>
+                                    </span>
+                                    <div class="timeline-card__copy">
+                                        <strong>${item.title}</strong>
+                                        <span>${item.description}</span>
                                     </div>
                                 </div>
-                                <span class="channel-status channel-status--${item.status.toLowerCase()}">${item.status.toUpperCase()}</span>
+                                <div class="timeline-card__meta">
+                                    <span>${item.at}</span>
+                                </div>
                             </article>
                         `,
                     )
                     .join("")}
-                <div class="modal-note">Each status change in the timeline below was also pushed to successfully connected channels.</div>
-            </section>
-        `;
-    }
-
-    if (activeTab === "timeline") {
-        return `
-            <section class="tab-panel">
-                <p class="muted-copy">Every change is visible to the customer in real-time via their tracking link.</p>
-                <div class="timeline-list">
-                    ${order.timeline
-                        .map(
-                            (item) => `
-                                <article class="timeline-card">
-                                    <div class="timeline-card__main">
-                                        <span class="timeline-marker">
-                                            <i data-lucide="clock-3"></i>
-                                        </span>
-                                        <div class="timeline-card__copy">
-                                            <strong>${item.title}</strong>
-                                            <span>${item.description}</span>
-                                        </div>
-                                    </div>
-                                    <div class="timeline-card__meta">
-                                        ${item.notified ? '<i data-lucide="bell"></i><span>Notified</span>' : ""}
-                                        <span>${item.at}</span>
-                                    </div>
-                                </article>
-                            `,
-                        )
-                        .join("")}
-                </div>
-            </section>
-        `;
-    }
-
-    return `
-        <section class="tab-panel">
-            <div class="live-empty-state">
-                <div>
-                    <div class="live-empty-state__icon">
-                        <i data-lucide="map-pinned"></i>
-                    </div>
-                    <strong>${order.liveTrackingMessage}</strong>
-                    <p>${order.liveTrackingHint}</p>
-                </div>
             </div>
-            <article class="customer-view-card">
-                <div class="customer-view-card__title">CUSTOMER VIEW</div>
-                <p>The customer sees every status change in real-time at their tracking link. When the order is out for delivery, they see the driver's live position on the map.</p>
-                <div class="customer-view-card__footer">
-                    <span class="status-dot"></span>
-                    <span>${order.timeline[0]?.title ?? "Order Created"}</span>
-                </div>
-            </article>
         </section>
     `;
 }
@@ -419,7 +371,7 @@ function renderImportModal() {
                         <strong>${isFilled ? state.importFileName : "Drop CSV or XML file here"}</strong>
                         <span>${isFilled ? "File selected and ready to import" : "or click to browse files"}</span>
                     </label>
-                    <input class="hidden-input" id="orders-import-file" type="file" accept=".csv,.xml,.xlsx,.xls" />
+                    <input class="hidden-input" id="orders-import-file" type="file" accept=".csv,.txt,.xml" />
                     <div class="import-note">
                         <i data-lucide="info"></i>
                         <span>${note}</span>
@@ -550,6 +502,7 @@ function renderAddModal() {
 
 function handleSearchInput(event) {
     state.searchTerm = event.target.value.trim().toLowerCase();
+    state.currentPage = 1;
     renderTable();
     refreshIcons();
 }
@@ -561,7 +514,38 @@ function handleFilterClick(event) {
     }
 
     state.activeStatus = button.dataset.statusFilter;
+    state.currentPage = 1;
     renderFilters();
+    renderTable();
+    refreshIcons();
+}
+
+function handlePaginationClick(event) {
+    const pageButton = event.target.closest("[data-page]");
+    const actionButton = event.target.closest("[data-page-action]");
+
+    const filteredOrders = getFilteredOrders();
+    const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
+
+    if (pageButton) {
+        state.currentPage = Number(pageButton.dataset.page);
+        renderTable();
+        refreshIcons();
+        return;
+    }
+
+    if (!actionButton) {
+        return;
+    }
+
+    if (actionButton.dataset.pageAction === "prev") {
+        state.currentPage = Math.max(1, state.currentPage - 1);
+    }
+
+    if (actionButton.dataset.pageAction === "next") {
+        state.currentPage = Math.min(totalPages, state.currentPage + 1);
+    }
+
     renderTable();
     refreshIcons();
 }
@@ -586,28 +570,11 @@ async function handleTableClick(event) {
 function handleModalClick(event) {
     const overlay = event.target.closest("[data-modal-close='overlay']");
     const closeButton = event.target.closest("[data-modal-close='button']");
-    const tabButton = event.target.closest("[data-tab]");
-    const copyButton = event.target.closest("[data-action='copy-link']");
     const confirmImportButton = event.target.closest(
         "[data-action='confirm-import']",
     );
     if (event.target === overlay || closeButton) {
         closeModal();
-        return;
-    }
-
-    if (tabButton) {
-        state.modal = {
-            ...state.modal,
-            tab: tabButton.dataset.tab,
-        };
-        renderModal();
-        refreshIcons();
-        return;
-    }
-
-    if (copyButton) {
-        copyTrackingLink(copyButton.dataset.link);
         return;
     }
 
@@ -628,10 +595,21 @@ function handleModalSubmit(event) {
     }
 }
 
-function handleImportFileChange(event) {
+async function handleImportFileChange(event) {
     const file = event.target.files?.[0];
     state.importFile = file;
     state.importFileName = file?.name ?? "";
+
+    if (file && isCsvFile(file)) {
+        try {
+            const csvText = await file.text();
+            const csvList = parseCsvToList(csvText);
+            console.log("Uploaded CSV data list:", csvList);
+        } catch (error) {
+            console.error("Failed to read CSV file:", error);
+        }
+    }
+
     renderModal();
     refreshIcons();
 }
@@ -649,6 +627,7 @@ async function handleAddOrderSubmit(event) {
     state.addForm = Object.fromEntries(formData.entries());
     await OrdersApi.createOrder(state.addForm);
     state.orders = await OrdersApi.getOrders();
+    state.currentPage = 1;
     state.addForm = null;
     closeModal();
     renderPage();
@@ -659,7 +638,6 @@ async function openDetailsModal(orderId) {
     state.modal = {
         orderId,
         orderData,
-        tab: "live",
         type: "details",
     };
     renderModal();
@@ -706,6 +684,7 @@ async function confirmImport() {
         }
 
         state.orders = await OrdersApi.getOrders();
+        state.currentPage = 1;
         closeModal();
         renderPage();
     } catch (error) {
@@ -758,6 +737,83 @@ function handleExport() {
     URL.revokeObjectURL(url);
 }
 
+function isCsvFile(file) {
+    return (
+        file.type === "text/csv" ||
+        file.name.toLowerCase().endsWith(".csv")
+    );
+}
+
+function parseCsvToList(csvText) {
+    const rows = parseCsvRows(csvText).filter((row) =>
+        row.some((cell) => cell.trim() !== ""),
+    );
+
+    if (!rows.length) {
+        return [];
+    }
+
+    const headers = rows[0].map((header, index) => {
+        const trimmedHeader = header.trim();
+        return trimmedHeader || `column_${index + 1}`;
+    });
+
+    return rows.slice(1).map((row) =>
+        headers.reduce((record, header, index) => {
+            record[header] = row[index] ?? "";
+            return record;
+        }, {}),
+    );
+}
+
+function parseCsvRows(csvText) {
+    const rows = [];
+    let row = [];
+    let cell = "";
+    let inQuotes = false;
+
+    for (let index = 0; index < csvText.length; index += 1) {
+        const char = csvText[index];
+        const nextChar = csvText[index + 1];
+
+        if (char === '"' && inQuotes && nextChar === '"') {
+            cell += '"';
+            index += 1;
+            continue;
+        }
+
+        if (char === '"') {
+            inQuotes = !inQuotes;
+            continue;
+        }
+
+        if (char === "," && !inQuotes) {
+            row.push(cell);
+            cell = "";
+            continue;
+        }
+
+        if ((char === "\n" || char === "\r") && !inQuotes) {
+            if (char === "\r" && nextChar === "\n") {
+                index += 1;
+            }
+
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = "";
+            continue;
+        }
+
+        cell += char;
+    }
+
+    row.push(cell);
+    rows.push(row);
+
+    return rows;
+}
+
 function getFilteredOrders() {
     return state.orders.filter((order) => {
         const matchesStatus =
@@ -771,6 +827,11 @@ function getFilteredOrders() {
 
         return matchesStatus && matchesSearch;
     });
+}
+
+function paginate(items, page, pageSize) {
+    const start = (page - 1) * pageSize;
+    return items.slice(start, start + pageSize);
 }
 
 function renderPriorityBadge(priority) {
@@ -789,14 +850,6 @@ function formatWeight(weight) {
 
 function toKebabCase(value) {
     return value.toLowerCase().replace(/\s+/g, "-");
-}
-
-async function copyTrackingLink(link) {
-    try {
-        await navigator.clipboard.writeText(link);
-    } catch (error) {
-        console.error("Could not copy tracking link", error);
-    }
 }
 
 function refreshIcons() {

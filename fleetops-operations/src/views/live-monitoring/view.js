@@ -44,10 +44,7 @@ export async function mount() {
 
     state = {
         activeDate:        defaultDate,
-        activeStatus:      "All",
-        searchTerm:        "",
         selectedVehicleId: firstVehicleId,
-        shift:             "All Shifts",
         snapshot:          mockSnapshot,
         playback: { frame: 100, isPlaying: false, speed: 1 },
     };
@@ -77,73 +74,36 @@ export function unmount() {
 function bindEvents() {
     cleanupFns = [];
 
-    const filters        = document.getElementById("live-monitoring-filters");
-    const searchInput    = document.getElementById("live-monitoring-search-input");
-    const shiftSelect    = document.getElementById("live-monitoring-shift-select");
     const shortcuts      = document.getElementById("live-monitoring-date-shortcuts");
     const dateInput      = document.getElementById("live-monitoring-date-input");
     const dateTrigger    = document.getElementById("live-monitoring-date-picker-trigger");
-    const viewRoutesBtn  = document.getElementById("live-monitoring-view-routes-btn");
 
     handleDatePickerTrigger = () => dateInput?.showPicker?.();
 
-    filters?.addEventListener("click",  handleFilterClick);
-    searchInput?.addEventListener("input",  handleSearch);
-    shiftSelect?.addEventListener("change", handleShiftChange);
     shortcuts?.addEventListener("click",  handleDateShortcutClick);
     dateInput?.addEventListener("change", handleDateChange);
     dateTrigger?.addEventListener("click",  handleDatePickerTrigger);
-    viewRoutesBtn?.addEventListener("click", handleViewRoutesClick);
 
     cleanupFns.push(
-        () => filters?.removeEventListener("click",  handleFilterClick),
-        () => searchInput?.removeEventListener("input",  handleSearch),
-        () => shiftSelect?.removeEventListener("change", handleShiftChange),
         () => shortcuts?.removeEventListener("click",  handleDateShortcutClick),
         () => dateInput?.removeEventListener("change", handleDateChange),
         () => dateTrigger?.removeEventListener("click",  handleDatePickerTrigger),
-        () => viewRoutesBtn?.removeEventListener("click", handleViewRoutesClick),
     );
 }
 
 // ─── Render ────────────────────────────────────────────────────────────────
 
 function renderPage() {
-    renderFilters();
     renderToolbarControls();
     renderOverview();
     renderMap();
     renderSidebar();
-    renderAlerts();
     refreshIcons();
 }
 
-function renderFilters() {
-    const filters = document.getElementById("live-monitoring-filters");
-    if (!filters) return;
-
-    filters.innerHTML = LiveMonitoringApi.getStatusOptions()
-        .map((status) => `
-            <button
-                class="live-filter-chip ${state.activeStatus === status ? "is-active" : ""}"
-                type="button"
-                data-status="${status}">
-                ${status}
-            </button>
-        `)
-        .join("");
-}
-
 function renderToolbarControls() {
-    const shiftSelect = document.getElementById("live-monitoring-shift-select");
     const shortcuts   = document.getElementById("live-monitoring-date-shortcuts");
     const dateInput   = document.getElementById("live-monitoring-date-input");
-
-    if (shiftSelect) {
-        shiftSelect.innerHTML = LiveMonitoringApi.getShiftOptions()
-            .map((o) => `<option value="${o}" ${state.shift === o ? "selected" : ""}>${o}</option>`)
-            .join("");
-    }
 
     if (shortcuts) {
         shortcuts.innerHTML = LiveMonitoringApi.getDateOptions()
@@ -591,41 +551,8 @@ function renderMetricCard(label, value) {
 
 // ─── Alerts ────────────────────────────────────────────────────────────────
 
-function renderAlerts() {
-    const root = document.getElementById("live-monitoring-alerts");
-    if (!root) return;
-
-    root.innerHTML = state.snapshot.alerts
-        .map((alert) => `
-            <span class="live-alert-chip live-alert-chip--${alert.tone}">
-                <i data-lucide="${getAlertIcon(alert.tone)}"></i>
-                <span>${alert.text}</span>
-            </span>
-        `)
-        .join("");
-}
 
 // ─── Event Handlers ────────────────────────────────────────────────────────
-
-function handleFilterClick(event) {
-    const button = event.target.closest("[data-status]");
-    if (!button) return;
-    state.activeStatus = button.dataset.status;
-    ensureSelectedVehicleVisible();
-    renderPage();
-}
-
-function handleSearch(event) {
-    state.searchTerm = event.target.value.trim().toLowerCase();
-    ensureSelectedVehicleVisible();
-    renderPage();
-}
-
-function handleShiftChange(event) {
-    state.shift = event.target.value;
-    ensureSelectedVehicleVisible();
-    renderPage();
-}
 
 function handleDateShortcutClick(event) {
     const button = event.target.closest("[data-date-shortcut]");
@@ -641,16 +568,6 @@ function handleFrameChange(event) {
     state.playback.frame = Number(event.target.value);
     renderMap();
     refreshIcons();
-}
-
-function handleViewRoutesClick() {
-    const selected = getSelectedVehicle();
-    if (selected?.routeId) {
-        sessionStorage.setItem("fleetops-live-selected-route", selected.routeId);
-    } else {
-        sessionStorage.removeItem("fleetops-live-selected-route");
-    }
-    stopPlayback();
 }
 
 function handleSpeedChange(event) {
@@ -715,17 +632,7 @@ function stopPlayback() {
 // ─── Filtering ─────────────────────────────────────────────────────────────
 
 function getFilteredOperations() {
-    return state.snapshot.operations.filter((vehicle) => {
-        const matchStatus = state.activeStatus === "All" || vehicle.status === state.activeStatus;
-        const matchShift  = state.shift === "All Shifts" || vehicle.shift === state.shift;
-        const matchSearch =
-            !state.searchTerm ||
-            vehicle.id.toLowerCase().includes(state.searchTerm) ||
-            vehicle.driver.toLowerCase().includes(state.searchTerm) ||
-            vehicle.plate.toLowerCase().includes(state.searchTerm);
-
-        return matchStatus && matchShift && matchSearch;
-    });
+    return state.snapshot.operations;
 }
 
 function getSelectedVehicle() {
@@ -756,12 +663,6 @@ function getVehiclePosition(vehicle) {
 
 function renderStatusBadge(status) {
     return `<span class="live-status-badge live-status-badge--${toKebabCase(status)}">${status}</span>`;
-}
-
-function getAlertIcon(tone) {
-    if (tone === "success") return "badge-check";
-    if (tone === "danger")  return "circle-alert";
-    return "triangle-alert";
 }
 
 function formatDateLabel(dateString) {

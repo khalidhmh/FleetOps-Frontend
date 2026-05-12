@@ -3,6 +3,11 @@ import api from "/shared/api-handler.js";
 const API_BASE = "http://localhost:8000/api/v1";
 const IMPORT_NOTE =
     "CSV and XML files are supported. Imported rows are validated before they are added to orders.";
+const IMPORT_FORMATS = {
+    csv: "csv",
+    txt: "csv",
+    xml: "xml",
+};
 const ORDER_PAYMENT_OPTIONS = ["Prepaid", "Cash", "COD", "Card"];
 const ORDER_PRIORITY_OPTIONS = ["Low", "Normal", "High", "Urgent"];
 const ORDER_STATUS_OPTIONS = [
@@ -87,26 +92,34 @@ async function createOrder(payload) {
 
 async function importOrders(file) {
     try {
+        if (!file) {
+            throw new Error("Please select a CSV or XML file first.");
+        }
+
         const formData = new FormData();
-        const extension = file.name.split('.').pop().toLowerCase();
-        const formatMap = { 'csv': 'csv', 'xml': 'xml' };
+        const extension = file.name.split(".").pop().toLowerCase();
+        const format = IMPORT_FORMATS[extension];
+
+        if (!format) {
+            throw new Error("Only CSV and XML order imports are supported.");
+        }
         
         formData.append("file", file);
-        formData.append("format", formatMap[extension] || "csv");
+        formData.append("format", format);
 
-        const response = await api.post(`${API_BASE}/orders/import`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        const response = await api.post(`${API_BASE}/orders/import`, formData);
 
         if (response.data && response.data.success) {
-            return response.data.data;
+            return {
+                imported: Number(response.data.data?.imported) || 0,
+                errors: response.data.data?.errors || [],
+                batchId: response.data.data?.batch_id || null,
+            };
         }
         throw new Error(response.data?.message || "Import failed");
     } catch (error) {
         console.error("Failed to import orders:", error);
-        throw error;
+        throw new Error(error.data?.message || error.message || "Import failed");
     }
 }
 

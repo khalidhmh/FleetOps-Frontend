@@ -1,20 +1,4 @@
 <section class="view-page live-monitoring-page stack">
-    <section class="live-monitoring-toolbar">
-        <div class="live-monitoring-filters" id="live-monitoring-filters"></div>
-
-        <div class="live-monitoring-toolbar__right">
-            <div class="search-field live-monitoring-search">
-                <i data-lucide="search" class="search-icon"></i>
-                <input
-                    id="live-monitoring-search-input"
-                    type="search"
-                    placeholder="Search driver or plate..." />
-            </div>
-
-            <select id="live-monitoring-shift-select" aria-label="Select shift"></select>
-        </div>
-    </section>
-
     <section class="live-monitoring-overview" id="live-monitoring-overview"></section>
 
     <section class="live-monitoring-layout">
@@ -31,20 +15,8 @@
 
             <div class="live-monitoring-map" id="live-monitoring-map"></div>
 
-            <footer class="live-monitoring-timeline live-monitoring-timeline--current">
-                <div class="live-monitoring-date-input">
-                    <i data-lucide="satellite"></i>
-                    <span>Latest GPS positions</span>
-                </div>
-
-                <a href="/routes" data-link class="timeline-icon-btn" id="live-monitoring-view-routes-btn" aria-label="View routes" title="View Routes">
-                    <i data-lucide="navigation"></i>
-                </a>
-            </footer>
         </section>
 
         <aside class="live-monitoring-sidebar" id="live-monitoring-sidebar"></aside>
     </section>
-
-    <section class="live-monitoring-alerts" id="live-monitoring-alerts"></section>
 </section>

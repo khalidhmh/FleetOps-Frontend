@@ -97,8 +97,6 @@ function bindEvents() {
     const dateSelect = document.getElementById("routes-date-select");
     const tableBody = document.getElementById("routes-table-body");
     const pagination = document.getElementById("routes-pagination");
-    const exportButton = document.getElementById("routes-export-btn");
-    const newRouteButton = document.getElementById("routes-new-btn");
     const modalRoot = document.getElementById("routes-modal-root");
 
     searchInput?.addEventListener("input", handleSearchInput);
@@ -107,8 +105,6 @@ function bindEvents() {
     dateSelect?.addEventListener("change", handleDateChange);
     tableBody?.addEventListener("click", handleTableClick);
     pagination?.addEventListener("click", handlePaginationClick);
-    exportButton?.addEventListener("click", handleExport);
-    newRouteButton?.addEventListener("click", openNewRouteModal);
     modalRoot?.addEventListener("click", handleModalClick);
     modalRoot?.addEventListener("submit", handleModalSubmit);
 
@@ -127,8 +123,6 @@ function bindEvents() {
         () => dateSelect?.removeEventListener("change", handleDateChange),
         () => tableBody?.removeEventListener("click", handleTableClick),
         () => pagination?.removeEventListener("click", handlePaginationClick),
-        () => exportButton?.removeEventListener("click", handleExport),
-        () => newRouteButton?.removeEventListener("click", openNewRouteModal),
         () => modalRoot?.removeEventListener("click", handleModalClick),
         () => modalRoot?.removeEventListener("submit", handleModalSubmit),
         () => document.removeEventListener("keydown", handleEscape),
@@ -136,22 +130,12 @@ function bindEvents() {
 }
 
 function renderPage() {
-    renderSummary();
     renderOverview();
     renderFilters();
     renderSelects();
     renderTable();
     renderModal();
     refreshIcons();
-}
-
-function renderSummary() {
-    const summary = document.getElementById("routes-summary");
-    if (!summary) {
-        return;
-    }
-
-    summary.textContent = `${state.routes.length} total routes`;
 }
 
 function renderOverview() {
